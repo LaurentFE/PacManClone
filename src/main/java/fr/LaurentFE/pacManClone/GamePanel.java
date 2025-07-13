@@ -44,8 +44,6 @@ public class GamePanel extends JPanel implements Runnable {
     private void drawPacMan(Graphics2D g2d) {
         int mouthStartAngle;
         g2d.setColor(Color.YELLOW);
-        g2d.fillOval(pacMan.getX(), pacMan.getY(), 150,150);
-        g2d.setColor(Color.BLACK);
         if(pacMan.getOrientation() == Orientation.UP) {
             mouthStartAngle = 90;
         } else if (pacMan.getOrientation() == Orientation.RIGHT) {
@@ -59,8 +57,8 @@ public class GamePanel extends JPanel implements Runnable {
                 pacMan.getY(),
                 150,
                 150,
-                mouthStartAngle - pacMan.getCurrentMouthAngle()/2,
-                pacMan.getCurrentMouthAngle());
+                mouthStartAngle + pacMan.getCurrentMouthAngle()/2,
+                360 - pacMan.getCurrentMouthAngle());
     }
 
     public void update() {
