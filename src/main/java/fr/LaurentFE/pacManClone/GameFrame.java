@@ -20,7 +20,13 @@ public class GameFrame extends JFrame {
             }
         });
 
-        mainDisplay = new GamePanel();
+        GameMap gameMap = new GameMap("src/main/resources/level0");
+        if (!gameMap.isUsable()) {
+            closeUnusableMap();
+            mainDisplay = null;
+            return;
+        }
+        mainDisplay = new GamePanel(gameMap);
 
         add(mainDisplay, BorderLayout.CENTER);
         pack();
@@ -41,5 +47,18 @@ public class GameFrame extends JFrame {
             mainDisplay.stopGameThread();
             dispose();
         }
+    }
+
+    private void closeUnusableMap() {
+        JOptionPane.showMessageDialog(
+                null,
+                """
+                        The map provided is not usable.
+                        Check the error stream for details.
+                        Program will now close.""",
+                "Unusable map provided",
+                JOptionPane.ERROR_MESSAGE);
+
+        dispose();
     }
 }
