@@ -418,41 +418,41 @@ public class GamePanel extends JPanel implements Runnable {
                     tileSize-2,
                     0,
                     -90);
-        case SIMPLEOUTERUPRIGHTCORNER ->
-            g2d.drawArc(x*tileSize + tileSize/2 + 2,
-                    y*tileSize - tileSize/2,
-                    tileSize-2,
-                    tileSize-2,
-                    180,
-                    90);
-        case SIMPLEINNERDOWNRIGHTCORNER ->
-            g2d.drawArc(x*tileSize + tileSize/2 - 2,
-                    y*tileSize + tileSize/2 - 2,
-                    tileSize+2,
-                    tileSize+2,
-                    180,
-                    -90);
-        case SIMPLEINNERDOWNLEFTCORNER ->
-            g2d.drawArc(x*tileSize - tileSize/2,
-                    y*tileSize + tileSize/2 - 2,
-                    tileSize+2,
-                    tileSize+2,
-                    0,
-                    90);
-        case SIMPLEINNERUPLEFTCORNER ->
-            g2d.drawArc(x*tileSize - tileSize/2,
-                    y*tileSize - tileSize/2,
-                    tileSize+2,
-                    tileSize+2,
-                    0,
-                    -90);
-        case SIMPLEINNERUPRIGHTCORNER ->
-            g2d.drawArc(x*tileSize + tileSize/2 - 2,
-                    y*tileSize - tileSize/2,
-                    tileSize+2,
-                    tileSize+2,
-                    180,
-                    90);
+            case SIMPLEOUTERUPRIGHTCORNER ->
+                g2d.drawArc(x*tileSize + tileSize/2 + 2,
+                        y*tileSize - tileSize/2,
+                        tileSize-2,
+                        tileSize-2,
+                        180,
+                        90);
+            case SIMPLEINNERDOWNRIGHTCORNER ->
+                g2d.drawArc(x*tileSize + tileSize/2 - 2,
+                        y*tileSize + tileSize/2 - 2,
+                        tileSize+2,
+                        tileSize+2,
+                        180,
+                        -90);
+            case SIMPLEINNERDOWNLEFTCORNER ->
+                g2d.drawArc(x*tileSize - tileSize/2,
+                        y*tileSize + tileSize/2 - 2,
+                        tileSize+2,
+                        tileSize+2,
+                        0,
+                        90);
+            case SIMPLEINNERUPLEFTCORNER ->
+                g2d.drawArc(x*tileSize - tileSize/2,
+                        y*tileSize - tileSize/2,
+                        tileSize+2,
+                        tileSize+2,
+                        0,
+                        -90);
+            case SIMPLEINNERUPRIGHTCORNER ->
+                g2d.drawArc(x*tileSize + tileSize/2 - 2,
+                        y*tileSize - tileSize/2,
+                        tileSize+2,
+                        tileSize+2,
+                        180,
+                        90);
         }
     }
 
