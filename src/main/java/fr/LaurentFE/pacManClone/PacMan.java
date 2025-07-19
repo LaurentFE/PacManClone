@@ -8,7 +8,6 @@ public class PacMan {
     private int currentMouthAngle;
     private int mouthAngleIncrement;
     private final int moveSpeed;
-    private boolean isMoving;
     private final Rectangle hitBox;
     private final int tileSize;
     private final int size;
@@ -22,7 +21,6 @@ public class PacMan {
         maxMouthAngle = 90;
         currentMouthAngle = maxMouthAngle;
         mouthAngleIncrement = -5;
-        isMoving = false;
     }
 
     public void animateMouth() {
@@ -37,7 +35,6 @@ public class PacMan {
     }
 
     public void move() {
-        if(isMoving) {
             if (orientation == Orientation.LEFT) {
                 hitBox.x = hitBox.x - moveSpeed;
             } else if (orientation == Orientation.RIGHT) {
@@ -47,7 +44,6 @@ public class PacMan {
             } else if (orientation == Orientation.DOWN) {
                 hitBox.y = hitBox.y + moveSpeed;
             }
-        }
     }
 
     public void bumpOutOfCollision(Point collisionTileMapPosition) {
@@ -67,7 +63,6 @@ public class PacMan {
     }
 
     public void changeOrientation(Orientation orientation) {
-        isMoving = true;
         this.orientation = orientation;
     }
 
