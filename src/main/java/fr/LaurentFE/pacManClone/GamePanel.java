@@ -17,7 +17,13 @@ public class GamePanel extends JPanel implements Runnable {
 
     public GamePanel(GameMap gameMap) {
         tileSize = 32;
-        pacMan = new PacMan(tileSize*13, tileSize*25 + tileSize/2, Orientation.RIGHT);
+        int moveSpeed = tileSize/8;
+        pacMan = new PacMan(
+                new Point(tileSize*13,tileSize*26),
+                tileSize,
+                tileSize,
+                Orientation.RIGHT,
+                moveSpeed);
         this.gameMap = gameMap;
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()*tileSize, gameMap.getMapHeightTile()*tileSize));
         setBackground(Color.BLACK);
@@ -50,7 +56,7 @@ public class GamePanel extends JPanel implements Runnable {
     private void drawMap(Graphics2D g2d) {
         for (int y = 0; y < gameMap.getMapHeightTile(); y++) {
             for (int x = 0; x < gameMap.getMapWidthTile(); x++) {
-                TileType currentTile = gameMap.getTile(x,y);
+                TileType currentTile = gameMap.getTile(new Point(x,y));
                 if (currentTile == TileType.PATH
                         || currentTile == TileType.OUTOFBOUNDS) {
                     g2d.setColor(Color.BLACK);
@@ -319,12 +325,12 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void drawWallShape(int x, int y, Graphics2D g2d) {
         Map<String, TileType> neighbours = new HashMap<>();
-        neighbours.put("above",gameMap.getTile(x, y-1));
-        neighbours.put("left",gameMap.getTile(x-1, y));
-        neighbours.put("below",gameMap.getTile(x, y+1));
+        neighbours.put("above",gameMap.getTile(new Point(x, y-1)));
+        neighbours.put("left",gameMap.getTile(new Point(x-1, y)));
+        neighbours.put("below",gameMap.getTile(new Point(x, y+1)));
 
         g2d.setColor(Color.BLUE);
-        switch(gameMap.getTile(x,y)){
+        switch(gameMap.getTile(new Point(x,y))){
             case DOUBLEHORIZONTALWALL ->
                 drawDoubleHorizontalWall(
                         neighbours.get("above")==TileType.PATH,
@@ -468,30 +474,79 @@ public class GamePanel extends JPanel implements Runnable {
         } else {
             mouthStartAngle = 180;
         }
-        g2d.fillArc(pacMan.getX(),
-                pacMan.getY(),
-                tileSize*2 - tileSize/2,
-                tileSize*2 - tileSize/2,
+        g2d.fillArc(pacMan.getPosition().x,
+                pacMan.getPosition().y,
+                pacMan.getSize(),
+                pacMan.getSize(),
                 mouthStartAngle + pacMan.getCurrentMouthAngle()/2,
                 360 - pacMan.getCurrentMouthAngle());
     }
 
-    public void update() {
-        // PacMan can't go diagonally.
+    private void updatePacMan() {
         if (gameKeyHandler.isUpPressed()) {
-            pacMan.setOrientation(Orientation.UP);
-            pacMan.offsetY(-3);
+            pacMan.changeOrientation(Orientation.UP);
+            updatePacManPosition();
         } else if (gameKeyHandler.isRightPressed()) {
-            pacMan.setOrientation(Orientation.RIGHT);
-            pacMan.offsetX(3);
+            pacMan.changeOrientation(Orientation.RIGHT);
+            updatePacManPosition();
         } else if (gameKeyHandler.isDownPressed()) {
-            pacMan.setOrientation(Orientation.DOWN);
-            pacMan.offsetY(3);
+            pacMan.changeOrientation(Orientation.DOWN);
+            updatePacManPosition();
         } else if (gameKeyHandler.isLeftPressed()) {
-            pacMan.setOrientation(Orientation.LEFT);
-            pacMan.offsetX(-3);
+            pacMan.changeOrientation(Orientation.LEFT);
+            updatePacManPosition();
         }
         pacMan.animateMouth();
+    }
+
+    private void updatePacManPosition() {
+        pacMan.move();
+        Point upperLeftTile = new Point(
+                (pacMan.getHitBox().x / tileSize),
+                (pacMan.getHitBox().y / tileSize));
+        TileType upperLeftTileType = gameMap.getTile(
+                new Point(
+                        pacMan.getHitBox().x / tileSize,
+                        pacMan.getHitBox().y / tileSize)
+        );
+        Point upperRightTile = new Point(
+                ((pacMan.getHitBox().x + pacMan.getHitBox().width-1) / tileSize),
+                (pacMan.getHitBox().y / tileSize));
+        TileType upperRightTileType = gameMap.getTile(
+                new Point(
+                        (pacMan.getHitBox().x + pacMan.getHitBox().width-1)/ tileSize,
+                        pacMan.getHitBox().y / tileSize)
+        );
+        Point lowerLeftTile = new Point(
+                (pacMan.getHitBox().x / tileSize),
+                ((pacMan.getHitBox().y + pacMan.getHitBox().height-1) / tileSize));
+        TileType lowerLeftTileType = gameMap.getTile(
+                new Point(
+                        pacMan.getHitBox().x / tileSize,
+                        (pacMan.getHitBox().y + pacMan.getHitBox().height-1) / tileSize)
+        );
+        Point lowerRightTile = new Point(
+                ((pacMan.getHitBox().x + pacMan.getHitBox().width-1) / tileSize),
+                ((pacMan.getHitBox().y + pacMan.getHitBox().height-1) / tileSize));
+        TileType lowerRightTileType = gameMap.getTile(
+                new Point(
+                        (pacMan.getHitBox().x + pacMan.getHitBox().width-1) / tileSize,
+                        (pacMan.getHitBox().y + pacMan.getHitBox().height-1) / tileSize)
+        );
+
+        if (upperLeftTileType != TileType.PATH) {
+            pacMan.bumpOutOfCollision(upperLeftTile);
+        } else if (upperRightTileType != TileType.PATH) {
+            pacMan.bumpOutOfCollision(upperRightTile);
+        } else if (lowerLeftTileType != TileType.PATH) {
+            pacMan.bumpOutOfCollision(lowerLeftTile);
+        } else if (lowerRightTileType != TileType.PATH) {
+            pacMan.bumpOutOfCollision(lowerRightTile);
+        }
+    }
+
+    public void update() {
+        updatePacMan();
     }
 
     @Override

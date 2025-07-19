@@ -1,5 +1,6 @@
 package fr.LaurentFE.pacManClone;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,9 +88,12 @@ public class GameMap {
         return usable;
     }
 
-    public TileType getTile(int x, int y) {
-        if (x >= 0 && x < mapWidthTile && y >= 0 && y < mapHeightTile) {
-            return map[y][x];
+    public TileType getTile(Point position) {
+        if (position.x >= 0
+                && position.x < mapWidthTile
+                && position.y >= 0
+                && position.y < mapHeightTile) {
+            return map[position.y][position.x];
         }
         return TileType.UNDEFINED;
     }
