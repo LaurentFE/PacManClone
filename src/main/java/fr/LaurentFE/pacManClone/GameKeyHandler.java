@@ -5,17 +5,11 @@ import java.awt.event.KeyListener;
 
 public class GameKeyHandler implements KeyListener {
 
-    private boolean upPressed;
-    private boolean rightPressed;
-    private boolean downPressed;
-    private boolean leftPressed;
+    private Orientation nextOrientation;
 
-    public GameKeyHandler() {
+    public GameKeyHandler(Orientation defaultOrientation) {
         super();
-        upPressed = false;
-        rightPressed = false;
-        downPressed = false;
-        leftPressed = false;
+        nextOrientation = defaultOrientation;
     }
 
     @Override
@@ -25,59 +19,29 @@ public class GameKeyHandler implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        if (keyCode == KeyEvent.VK_UP ||
-                keyCode == KeyEvent.VK_Z) {
-            upPressed = true;
+        if (keyCode == KeyEvent.VK_UP
+                || keyCode == KeyEvent.VK_Z) {
+            nextOrientation = Orientation.UP;
         }
-        if (keyCode == KeyEvent.VK_RIGHT ||
-                keyCode == KeyEvent.VK_D) {
-            rightPressed = true;
+        if (keyCode == KeyEvent.VK_RIGHT
+                || keyCode == KeyEvent.VK_D) {
+            nextOrientation = Orientation.RIGHT;
         }
-        if (keyCode == KeyEvent.VK_DOWN ||
-                keyCode == KeyEvent.VK_S) {
-            downPressed = true;
+        if (keyCode == KeyEvent.VK_DOWN
+                || keyCode == KeyEvent.VK_S) {
+            nextOrientation = Orientation.DOWN;
         }
-        if (keyCode == KeyEvent.VK_LEFT ||
-                keyCode == KeyEvent.VK_Q) {
-            leftPressed = true;
+        if (keyCode == KeyEvent.VK_LEFT
+                || keyCode == KeyEvent.VK_Q) {
+            nextOrientation = Orientation.LEFT;
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        int keyCode = e.getKeyCode();
-        if (keyCode == KeyEvent.VK_UP ||
-                keyCode == KeyEvent.VK_Z) {
-            upPressed = false;
-        }
-        if (keyCode == KeyEvent.VK_RIGHT ||
-                keyCode == KeyEvent.VK_D) {
-            rightPressed = false;
-        }
-        if (keyCode == KeyEvent.VK_DOWN ||
-                keyCode == KeyEvent.VK_S) {
-            downPressed = false;
-        }
-        if (keyCode == KeyEvent.VK_LEFT ||
-                keyCode == KeyEvent.VK_Q) {
-            leftPressed = false;
-        }
     }
 
-
-    public boolean isUpPressed() {
-        return upPressed;
-    }
-
-    public boolean isRightPressed() {
-        return rightPressed;
-    }
-
-    public boolean isDownPressed() {
-        return downPressed;
-    }
-
-    public boolean isLeftPressed() {
-        return leftPressed;
+    public Orientation getNextOrientation() {
+        return nextOrientation;
     }
 }

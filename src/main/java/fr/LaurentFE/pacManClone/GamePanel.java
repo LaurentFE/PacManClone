@@ -18,17 +18,18 @@ public class GamePanel extends JPanel implements Runnable {
     public GamePanel(GameMap gameMap) {
         tileSize = 32;
         int moveSpeed = tileSize/8;
+        Orientation defaultOrientation = Orientation.RIGHT;
         pacMan = new PacMan(
                 new Point(tileSize*13,tileSize*26),
                 tileSize,
                 tileSize,
-                Orientation.RIGHT,
+                defaultOrientation,
                 moveSpeed);
         this.gameMap = gameMap;
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()*tileSize, gameMap.getMapHeightTile()*tileSize));
         setBackground(Color.BLACK);
         setDoubleBuffered(true); // Render is made on a second panel, then copied to the main widow => smoother rendering
-        gameKeyHandler = new GameKeyHandler();
+        gameKeyHandler = new GameKeyHandler(defaultOrientation);
         addKeyListener(gameKeyHandler);
         setFocusable(true);
     }
@@ -482,21 +483,100 @@ public class GamePanel extends JPanel implements Runnable {
                 360 - pacMan.getCurrentMouthAngle());
     }
 
+    private Rectangle getNextPathTileForOrientation() {
+        Point directionModifier;
+        Orientation orientation = gameKeyHandler.getNextOrientation();
+        if (orientation == Orientation.UP) {
+            directionModifier = new Point(0, -1);
+        } else if (orientation == Orientation.LEFT) {
+            directionModifier = new Point(-1, 0);
+        } else if (orientation == Orientation.DOWN) {
+            directionModifier = new Point(0, 1);
+        } else {
+            directionModifier = new Point(1, 0);
+        }
+        Point tileAPosition = new Point(
+                pacMan.getPosition().x / tileSize + directionModifier.x,
+                pacMan.getPosition().y / tileSize + directionModifier.y);
+        Point tileBPosition = new Point(
+                pacMan.getPosition().x / tileSize + directionModifier.x,
+                pacMan.getPosition().y / tileSize + directionModifier.y);
+        Point tileCPosition = new Point(
+                pacMan.getPosition().x / tileSize + directionModifier.x,
+                pacMan.getPosition().y / tileSize + directionModifier.y);
+
+        if (orientation == Orientation.UP || orientation == Orientation.DOWN) {
+            tileAPosition.x -= 1;
+            tileCPosition.x += 1;
+        } else {
+            tileAPosition.y -= 1;
+            tileCPosition.y += 1;
+        }
+
+        if (gameMap.getTile(tileAPosition) == TileType.PATH) {
+            return new Rectangle(
+                    tileAPosition.x * tileSize,
+                    tileAPosition.y * tileSize,
+                    tileSize,
+                    tileSize
+            );
+        } else if (gameMap.getTile(tileBPosition) == TileType.PATH) {
+            return new Rectangle(
+                    tileBPosition.x * tileSize,
+                    tileBPosition.y * tileSize,
+                    tileSize,
+                    tileSize
+            );
+        } else if (gameMap.getTile(tileCPosition) == TileType.PATH) {
+            return new Rectangle(
+                    tileCPosition.x * tileSize,
+                    tileCPosition.y * tileSize,
+                    tileSize,
+                    tileSize
+            );
+        } else {
+            return new Rectangle();
+        }
+    }
+
+    private boolean canPacManGetIntoPath() {
+        Rectangle pathTile = getNextPathTileForOrientation();
+        if (pathTile.equals(new Rectangle()))
+            return false;
+
+        if (gameKeyHandler.getNextOrientation() == Orientation.UP
+                || gameKeyHandler.getNextOrientation() == Orientation.DOWN) {
+            if (pathTile.x - pacMan.getHitBox().x < pacMan.getMoveSpeed()
+                    && pathTile.x - pacMan.getHitBox().x > -pacMan.getMoveSpeed()) {
+                pacMan.setX(pathTile.x);
+                return true;
+            }
+        } else {
+            if (pathTile.y - pacMan.getHitBox().y < pacMan.getMoveSpeed()
+                    && pathTile.y - pacMan.getHitBox().y > -pacMan.getMoveSpeed()) {
+                pacMan.setY(pathTile.y);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean tryToChangePacManDirection() {
+        if (gameKeyHandler.getNextOrientation() == pacMan.getOrientation())
+            return false;
+
+        if (canPacManGetIntoPath()) {
+            pacMan.setOrientation(gameKeyHandler.getNextOrientation());
+            updatePacManPosition();
+            return true;
+        }
+        return false;
+    }
+
     private void updatePacMan() {
-        if (gameKeyHandler.isUpPressed()) {
-            pacMan.changeOrientation(Orientation.UP);
-            updatePacManPosition();
-        } else if (gameKeyHandler.isRightPressed()) {
-            pacMan.changeOrientation(Orientation.RIGHT);
-            updatePacManPosition();
-        } else if (gameKeyHandler.isDownPressed()) {
-            pacMan.changeOrientation(Orientation.DOWN);
-            updatePacManPosition();
-        } else if (gameKeyHandler.isLeftPressed()) {
-            pacMan.changeOrientation(Orientation.LEFT);
+        if (!tryToChangePacManDirection()) {
             updatePacManPosition();
         }
-        pacMan.animateMouth();
     }
 
     private void updatePacManPosition() {
@@ -542,6 +622,8 @@ public class GamePanel extends JPanel implements Runnable {
             pacMan.bumpOutOfCollision(lowerLeftTile);
         } else if (lowerRightTileType != TileType.PATH) {
             pacMan.bumpOutOfCollision(lowerRightTile);
+        } else {
+            pacMan.animateMouth();
         }
     }
 

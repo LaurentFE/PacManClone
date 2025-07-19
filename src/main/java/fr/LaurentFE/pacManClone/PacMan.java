@@ -62,7 +62,7 @@ public class PacMan {
         return orientation;
     }
 
-    public void changeOrientation(Orientation orientation) {
+    public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
     }
 
@@ -80,5 +80,17 @@ public class PacMan {
 
     public Point getPosition() {
         return hitBox.getLocation();
+    }
+
+    public int getMoveSpeed() {
+        return moveSpeed;
+    }
+
+    public void setX(int x) {
+        hitBox.x = x;
+    }
+
+    public void setY(int y) {
+        hitBox.y = y;
     }
 }
