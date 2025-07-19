@@ -584,35 +584,19 @@ public class GamePanel extends JPanel implements Runnable {
         Point upperLeftTile = new Point(
                 (pacMan.getHitBox().x / tileSize),
                 (pacMan.getHitBox().y / tileSize));
-        TileType upperLeftTileType = gameMap.getTile(
-                new Point(
-                        pacMan.getHitBox().x / tileSize,
-                        pacMan.getHitBox().y / tileSize)
-        );
+        TileType upperLeftTileType = gameMap.getTile(upperLeftTile);
         Point upperRightTile = new Point(
                 ((pacMan.getHitBox().x + pacMan.getHitBox().width-1) / tileSize),
                 (pacMan.getHitBox().y / tileSize));
-        TileType upperRightTileType = gameMap.getTile(
-                new Point(
-                        (pacMan.getHitBox().x + pacMan.getHitBox().width-1)/ tileSize,
-                        pacMan.getHitBox().y / tileSize)
-        );
+        TileType upperRightTileType = gameMap.getTile(upperRightTile);
         Point lowerLeftTile = new Point(
                 (pacMan.getHitBox().x / tileSize),
                 ((pacMan.getHitBox().y + pacMan.getHitBox().height-1) / tileSize));
-        TileType lowerLeftTileType = gameMap.getTile(
-                new Point(
-                        pacMan.getHitBox().x / tileSize,
-                        (pacMan.getHitBox().y + pacMan.getHitBox().height-1) / tileSize)
-        );
+        TileType lowerLeftTileType = gameMap.getTile(lowerLeftTile);
         Point lowerRightTile = new Point(
                 ((pacMan.getHitBox().x + pacMan.getHitBox().width-1) / tileSize),
                 ((pacMan.getHitBox().y + pacMan.getHitBox().height-1) / tileSize));
-        TileType lowerRightTileType = gameMap.getTile(
-                new Point(
-                        (pacMan.getHitBox().x + pacMan.getHitBox().width-1) / tileSize,
-                        (pacMan.getHitBox().y + pacMan.getHitBox().height-1) / tileSize)
-        );
+        TileType lowerRightTileType = gameMap.getTile(lowerRightTile);
 
         if (upperLeftTileType != TileType.PATH) {
             pacMan.bumpOutOfCollision(upperLeftTile);
