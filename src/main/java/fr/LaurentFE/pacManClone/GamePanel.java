@@ -2,8 +2,7 @@ package fr.LaurentFE.pacManClone;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class GamePanel extends JPanel implements Runnable {
 
@@ -14,6 +13,7 @@ public class GamePanel extends JPanel implements Runnable {
     private final int tileSize;
     private final GameMap gameMap;
     private final PacMan pacMan;
+    private final Set<Ghost> ghosts;
 
     public GamePanel(GameMap gameMap) {
         tileSize = 32;
@@ -25,6 +25,36 @@ public class GamePanel extends JPanel implements Runnable {
                 tileSize,
                 defaultOrientation,
                 moveSpeed);
+        Ghost blinky = new Ghost(
+                new Point(tileSize*12, tileSize*16),
+                tileSize,
+                tileSize,
+                defaultOrientation,
+                moveSpeed,
+                Color.RED);
+        Ghost pinky = new Ghost(
+                new Point(tileSize*13, tileSize*16),
+                tileSize,
+                tileSize,
+                defaultOrientation,
+                moveSpeed,
+                Color.PINK);
+        Ghost inky = new Ghost(
+                new Point(tileSize*14, tileSize*16),
+                tileSize,
+                tileSize,
+                defaultOrientation,
+                moveSpeed,
+                Color.BLUE);
+        Ghost clyde = new Ghost(
+                new Point(tileSize*15, tileSize*16),
+                tileSize,
+                tileSize,
+                defaultOrientation,
+                moveSpeed,
+                Color.ORANGE);
+        Ghost[] ghostsArray = new Ghost[]{blinky, pinky, inky, clyde};
+        ghosts = new HashSet<>(Arrays.asList(ghostsArray));
         this.gameMap = gameMap;
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()*tileSize, gameMap.getMapHeightTile()*tileSize));
         setBackground(Color.BLACK);
@@ -52,6 +82,9 @@ public class GamePanel extends JPanel implements Runnable {
 
         drawMap(g2d);
         drawPacMan(g2d);
+        for(Ghost ghost: ghosts) {
+            drawGhost(g2d, ghost);
+        }
     }
 
     private void drawMap(Graphics2D g2d) {
@@ -461,6 +494,99 @@ public class GamePanel extends JPanel implements Runnable {
                         180,
                         90);
         }
+    }
+
+    private void drawGhost(Graphics2D g2d, Ghost ghost) {
+        g2d.setColor(ghost.getColor());
+        g2d.fillArc(ghost.getPosition().x + ghost.getSize()/16,
+                ghost.getPosition().y + ghost.getSize()/16,
+                ghost.getSize() -  ghost.getSize()/8,
+                3*ghost.getSize()/4,
+                0,
+                180);
+        g2d.fillRect(ghost.getPosition().x + ghost.getSize()/16,
+                ghost.getPosition().y + 3*ghost.getSize()/8,
+                14*ghost.getSize()/16,
+                7*ghost.getSize()/16);
+        drawGhostSkirt(g2d, ghost);
+        drawGhostEyes(g2d, ghost);
+    }
+
+    private void drawGhostSkirt(Graphics2D g2d, Ghost ghost) {
+        int[] x1 = new int[]{ghost.getPosition().x + ghost.getSize()/16,
+                ghost.getPosition().x + ghost.getSize()/16,
+                ghost.getPosition().x + 3*ghost.getSize()/16};
+        int[] x2 = new int[]{ghost.getPosition().x + 4*ghost.getSize()/16,
+                ghost.getPosition().x + 6*ghost.getSize()/16,
+                ghost.getPosition().x + 6*ghost.getSize()/16};
+        int[] x3 = new int[]{ghost.getPosition().x + 10*ghost.getSize()/16,
+                ghost.getPosition().x + 10*ghost.getSize()/16,
+                ghost.getPosition().x + 12*ghost.getSize()/16};
+        int[] x4 = new int[]{ghost.getPosition().x + 13*ghost.getSize()/16,
+                ghost.getPosition().x + 15*ghost.getSize()/16,
+                ghost.getPosition().x + 15*ghost.getSize()/16};
+        int[] y1 = new int[]{ghost.getPosition().y + 13*ghost.getSize()/16,
+                ghost.getPosition().y + 15*ghost.getSize()/16,
+                ghost.getPosition().y + 13*ghost.getSize()/16};
+        int[] y2 = new int[]{ghost.getPosition().y + 13*ghost.getSize()/16,
+                ghost.getPosition().y + 13*ghost.getSize()/16,
+                ghost.getPosition().y + 15*ghost.getSize()/16};
+        g2d.fillPolygon(x1, y1, 3);
+        g2d.fillPolygon(x2, y2, 3);
+        g2d.fillRect(x2[2], y1[0], ghost.getSize()/16, 2*ghost.getSize()/16);
+        g2d.fillRect(x2[2] + 3*ghost.getSize()/16, y1[0], ghost.getSize()/16, 2*ghost.getSize()/16);
+        g2d.fillPolygon(x3, y1, 3);
+        g2d.fillPolygon(x4, y2, 3);
+    }
+
+    private void drawGhostEyes(Graphics2D g2d, Ghost ghost) {
+        g2d.setColor(Color.WHITE);
+        int eyeHeight = 6*ghost.getSize()/16;
+        int eyeWidth = 4*ghost.getSize()/16;
+        int pupilSize = 2*ghost.getSize()/16;
+        Point leftEyePosition = new Point(ghost.getPosition().x + 4*ghost.getSize()/16, ghost.getPosition().y + 4*ghost.getSize()/16);
+        Point rightEyeOffset = new Point(ghost.getSize()/16 + eyeWidth, 0);
+        Point leftPupilPosition = new Point(ghost.getPosition().x + 6*ghost.getSize()/16, ghost.getPosition().y + 6*ghost.getSize()/16);
+        Point[] orientationOffsets = getEyeAndPupilOrientationOffset(ghost.getOrientation(), ghost.getSize());
+
+        leftEyePosition.x += orientationOffsets[0].x;
+        leftEyePosition.y += orientationOffsets[0].y;
+        leftPupilPosition.x += orientationOffsets[1].x;
+        leftPupilPosition.y += orientationOffsets[1].y;
+
+        g2d.fillArc(leftEyePosition.x,
+                leftEyePosition.y,
+                eyeWidth, eyeHeight, 0, 360);
+        g2d.fillArc(leftEyePosition.x + rightEyeOffset.x,
+                leftEyePosition.y + rightEyeOffset.y,
+                eyeWidth, eyeHeight, 0, 360);
+        g2d.setColor(Color.BLUE);
+        g2d.fillArc(leftPupilPosition.x,
+                leftPupilPosition.y,
+                pupilSize, pupilSize, 0, 360);
+        g2d.fillArc(leftPupilPosition.x + rightEyeOffset.x,
+                leftPupilPosition.y + rightEyeOffset.y,
+                pupilSize, pupilSize, 0, 360);
+
+    }
+
+    private Point[] getEyeAndPupilOrientationOffset(Orientation orientation, int ghostSize) {
+        Point eyeOrientationOffset;
+        Point pupilOrientationOffset;
+        if (orientation == Orientation.UP) {
+            eyeOrientationOffset = new Point(-ghostSize/16, -ghostSize/8);
+            pupilOrientationOffset = new Point(-ghostSize/8, -ghostSize/4);
+        } else if (orientation == Orientation.LEFT) {
+            eyeOrientationOffset = new Point(-ghostSize/8, 0);
+            pupilOrientationOffset = new Point(-ghostSize/4, 0);
+        } else if (orientation == Orientation.DOWN) {
+            eyeOrientationOffset = new Point(-ghostSize/16, ghostSize/16);
+            pupilOrientationOffset = new Point(-2*ghostSize/16, 3*ghostSize/16);
+        } else {
+            eyeOrientationOffset = new Point(0,0);
+            pupilOrientationOffset = new Point(0, 0);
+        }
+        return new Point[]{eyeOrientationOffset, pupilOrientationOffset};
     }
 
     private void drawPacMan(Graphics2D g2d) {
