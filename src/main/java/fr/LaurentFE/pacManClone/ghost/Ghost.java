@@ -1,4 +1,7 @@
-package fr.LaurentFE.pacManClone;
+package fr.LaurentFE.pacManClone.ghost;
+
+import fr.LaurentFE.pacManClone.GamePanel;
+import fr.LaurentFE.pacManClone.Orientation;
 
 import java.awt.*;
 
@@ -6,12 +9,10 @@ public class Ghost {
     private Orientation orientation;
     private final int moveSpeed;
     private final Rectangle hitBox;
-    private final int size;
     private final Color color;
 
-    public Ghost(Point startingPosition, int tileSize, int size, Orientation startingOrientation, int moveSpeed, Color color) {
-        this.size = size;
-        hitBox = new Rectangle(startingPosition.x, startingPosition.y, tileSize, tileSize);
+    public Ghost(Point startingPosition, Orientation startingOrientation, int moveSpeed, Color color) {
+        hitBox = new Rectangle(startingPosition.x, startingPosition.y, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE);
         orientation = startingOrientation;
         this.moveSpeed = moveSpeed;
         this.color = color;
@@ -23,10 +24,6 @@ public class Ghost {
 
     public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     public Color getColor() {
