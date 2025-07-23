@@ -7,17 +7,27 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class GameMap {
+    private static GameMap INSTANCE;
     private final int mapHeightTile;
     private final int mapWidthTile;
     private final TileType[][] map;
     private boolean usable;
 
-    public GameMap(String filePath) {
+    private GameMap() {
         mapHeightTile = 36;
         mapWidthTile = 28;
         map = new TileType[mapHeightTile][mapWidthTile];
         usable = false;
+    }
 
+    public static GameMap getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new GameMap();
+        }
+        return INSTANCE;
+    }
+
+    public void loadMap(String filePath) {
         try {
             usable=loadTileMap(filePath);
         } catch (IOException e) {
