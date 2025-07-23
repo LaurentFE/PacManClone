@@ -27,7 +27,7 @@ public class GameFrame extends JFrame {
             mainDisplay = null;
             return;
         }
-        mainDisplay = new GamePanel(gameMap);
+        mainDisplay = new GamePanel();
 
         add(mainDisplay, BorderLayout.CENTER);
         pack();

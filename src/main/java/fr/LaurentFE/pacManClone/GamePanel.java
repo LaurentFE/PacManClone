@@ -24,7 +24,7 @@ public class GamePanel extends JPanel implements Runnable {
             DEFAULT_ORIENTATION,
             MOVE_SPEED);
     public static final Ghost BLINKY = new Ghost(
-            new Point(TILE_SIZE *12, TILE_SIZE *16),
+            new Point(TILE_SIZE *9, TILE_SIZE *14),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.RED,
@@ -50,9 +50,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     private final GameMap gameMap;
 
-    public GamePanel(GameMap gameMap) {
-
-        this.gameMap = gameMap;
+    public GamePanel() {
+        this.gameMap = GameMap.getInstance();
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()* TILE_SIZE, gameMap.getMapHeightTile()* TILE_SIZE));
         setBackground(Color.BLACK);
         setDoubleBuffered(true); // Render is made on a second panel, then copied to the main widow => smoother rendering
@@ -738,6 +737,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void update() {
         updatePacMan();
+        BLINKY.update();
     }
 
     @Override
