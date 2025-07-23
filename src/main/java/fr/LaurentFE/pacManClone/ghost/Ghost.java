@@ -115,21 +115,21 @@ public class Ghost {
             tileCPosition.y += 1;
         }
 
-        if (gameMap.getTile(tileAPosition) == TileType.PATH) {
+        if (canGoThroughTile(tileAPosition)) {
             return new Rectangle(
                     tileAPosition.x * GamePanel.TILE_SIZE,
                     tileAPosition.y * GamePanel.TILE_SIZE,
                     GamePanel.TILE_SIZE,
                     GamePanel.TILE_SIZE
             );
-        } else if (gameMap.getTile(tileBPosition) == TileType.PATH) {
+        } else if (canGoThroughTile(tileBPosition)) {
             return new Rectangle(
                     tileBPosition.x * GamePanel.TILE_SIZE,
                     tileBPosition.y * GamePanel.TILE_SIZE,
                     GamePanel.TILE_SIZE,
                     GamePanel.TILE_SIZE
             );
-        } else if (gameMap.getTile(tileCPosition) == TileType.PATH) {
+        } else if (canGoThroughTile(tileCPosition)) {
             return new Rectangle(
                     tileCPosition.x * GamePanel.TILE_SIZE,
                     tileCPosition.y * GamePanel.TILE_SIZE,
@@ -216,33 +216,30 @@ public class Ghost {
         Point upperLeftTile = new Point(
                 (hitBox.x / GamePanel.TILE_SIZE),
                 (hitBox.y / GamePanel.TILE_SIZE));
-        TileType upperLeftTileType = gameMap.getTile(upperLeftTile);
         Point upperRightTile = new Point(
                 ((hitBox.x + hitBox.width-1) / GamePanel.TILE_SIZE),
                 (hitBox.y / GamePanel.TILE_SIZE));
-        TileType upperRightTileType = gameMap.getTile(upperRightTile);
         Point lowerLeftTile = new Point(
                 (hitBox.x / GamePanel.TILE_SIZE),
                 ((hitBox.y + hitBox.height-1) / GamePanel.TILE_SIZE));
-        TileType lowerLeftTileType = gameMap.getTile(lowerLeftTile);
         Point lowerRightTile = new Point(
                 ((hitBox.x + hitBox.width-1) / GamePanel.TILE_SIZE),
                 ((hitBox.y + hitBox.height-1) / GamePanel.TILE_SIZE));
-        TileType lowerRightTileType = gameMap.getTile(lowerRightTile);
 
-        if (upperLeftTileType != TileType.PATH) {
+        if (!canGoThroughTile(upperLeftTile)) {
             bumpOutOfCollision(upperLeftTile);
-        } else if (upperRightTileType != TileType.PATH) {
+        } else if (!canGoThroughTile(upperRightTile)) {
             bumpOutOfCollision(upperRightTile);
-        } else if (lowerLeftTileType != TileType.PATH) {
+        } else if (!canGoThroughTile(lowerLeftTile)) {
             bumpOutOfCollision(lowerLeftTile);
-        } else if (lowerRightTileType != TileType.PATH) {
+        } else if (!canGoThroughTile(lowerRightTile)) {
             bumpOutOfCollision(lowerRightTile);
         }
     }
 
     public boolean canGoThroughTile(Point tileCoords) {
         return gameMap.getTile(tileCoords) == TileType.PATH
+                || gameMap.getTile(tileCoords) == TileType.GHOSTHOUSE
                 || (gameMap.getTile(tileCoords) == TileType.DOOR && state == GhostState.EATEN);
     }
 

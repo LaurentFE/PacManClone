@@ -12,6 +12,7 @@ import java.util.Random;
 public final class Blinky implements GhostPersonality {
 
     private static final Point SCATTER_TARGET_TILE = new Point(GameMap.getInstance().getMapWidthTile() - 1, 0);
+    private static final Point EATEN_TARGET_TILE = GameMap.getInstance().getGhostHouse();
 
     public Blinky() {}
 
@@ -89,6 +90,36 @@ public final class Blinky implements GhostPersonality {
         return consideredMoveTiles;
     }
 
+    private Point getBehindTile() {
+        Orientation currentOrientation = GamePanel.BLINKY.getOrientation();
+        Point currentPosition = GamePanel.BLINKY.getPosition();
+        HashMap<Orientation, Point> directionModifier = new HashMap<>();
+        directionModifier.put(Orientation.UP, new Point(0, -1));
+        directionModifier.put(Orientation.LEFT, new Point(-1, 0));
+        directionModifier.put(Orientation.DOWN, new Point(0, 1));
+        directionModifier.put(Orientation.RIGHT, new Point(1, 0));
+        Point tileAbovePosition = new Point(
+                currentPosition.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).x,
+                currentPosition.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).y);
+        Point tileOnLeftPosition = new Point(
+                currentPosition.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).x,
+                currentPosition.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).y);
+        Point tileBelowPosition = new Point(
+                currentPosition.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).x,
+                currentPosition.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).y);
+        Point tileOnRightPosition = new Point(
+                currentPosition.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).x,
+                currentPosition.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).y);
+        if (currentOrientation == Orientation.DOWN)
+            return tileAbovePosition;
+        else if (currentOrientation == Orientation.RIGHT)
+            return tileOnLeftPosition;
+        else if (currentOrientation == Orientation.UP)
+            return tileBelowPosition;
+        else
+            return tileOnRightPosition;
+    }
+
     private Point getNextMoveTile(Point targetTile) {
         Point finalTile = new Point();
         int squaredDist = Integer.MAX_VALUE;
@@ -146,35 +177,8 @@ public final class Blinky implements GhostPersonality {
 
     private Orientation getNextFrightenedMovementOrientation() {
         ArrayList<Point> consideredMoveTiles = getConsideredMoveTiles();
-        Orientation currentOrientation = GamePanel.BLINKY.getOrientation();
         if (consideredMoveTiles.size() > 1) {
-            Point currentPosition = GamePanel.BLINKY.getPosition();
-            HashMap<Orientation, Point> directionModifier = new HashMap<>();
-            directionModifier.put(Orientation.UP, new Point(0, -1));
-            directionModifier.put(Orientation.LEFT, new Point(-1, 0));
-            directionModifier.put(Orientation.DOWN, new Point(0, 1));
-            directionModifier.put(Orientation.RIGHT, new Point(1, 0));
-            Point tileAbovePosition = new Point(
-                    currentPosition.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).x,
-                    currentPosition.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).y);
-            Point tileOnLeftPosition = new Point(
-                    currentPosition.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).x,
-                    currentPosition.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).y);
-            Point tileBelowPosition = new Point(
-                    currentPosition.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).x,
-                    currentPosition.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).y);
-            Point tileOnRightPosition = new Point(
-                    currentPosition.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).x,
-                    currentPosition.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).y);
-            if (currentOrientation == Orientation.DOWN)
-                consideredMoveTiles.add(tileAbovePosition);
-            else if (currentOrientation == Orientation.RIGHT)
-                consideredMoveTiles.add(tileOnLeftPosition);
-            else if (currentOrientation == Orientation.UP)
-                consideredMoveTiles.add(tileBelowPosition);
-            else if (currentOrientation == Orientation.LEFT)
-                consideredMoveTiles.add(tileOnRightPosition);
-
+            consideredMoveTiles.add(getBehindTile());
             Random random = new Random();
             return getOrientationToGoToTile(consideredMoveTiles.get(random.nextInt(consideredMoveTiles.size())));
         }
@@ -182,6 +186,13 @@ public final class Blinky implements GhostPersonality {
     }
 
     private Orientation getNextEatenMovementOrientation() {
-        return null;
+        Point currentPosition = GamePanel.BLINKY.getPosition();
+        currentPosition.x = currentPosition.x / GamePanel.TILE_SIZE;
+        currentPosition.y = currentPosition.y / GamePanel.TILE_SIZE;
+
+        if (currentPosition.x != EATEN_TARGET_TILE.x || currentPosition.y != EATEN_TARGET_TILE.y)
+            return getOrientationToGoToTile(getNextMoveTile(EATEN_TARGET_TILE));
+        System.out.println("GO DOWN");
+        return Orientation.DOWN;
     }
 }

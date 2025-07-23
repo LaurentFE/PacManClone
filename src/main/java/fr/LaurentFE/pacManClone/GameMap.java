@@ -12,6 +12,7 @@ public class GameMap {
     private final int mapWidthTile;
     private final TileType[][] map;
     private boolean usable;
+    private Point ghostHouse;
 
     private GameMap() {
         mapHeightTile = 36;
@@ -75,15 +76,21 @@ public class GameMap {
                     case 'h' -> TileType.SIMPLEINNERUPRIGHTCORNER;
                     case '0' -> TileType.OUTOFBOUNDS;
                     case 'w' -> TileType.DOOR;
+                    case 'X' -> TileType.GHOSTHOUSE;
                     default -> TileType.UNDEFINED;
                 };
-                if (map[y][x] == TileType.UNDEFINED) {
+                if (map[y][x] == TileType.GHOSTHOUSE) {
+                    ghostHouse = new Point(x, y);
+                } else if (map[y][x] == TileType.UNDEFINED) {
                     System.err.println("Undefined tile type in tile map : "+tile);
                     return false;
                 }
             }
         }
-        return true;
+        if (ghostHouse != null)
+            return true;
+        System.err.println("No GHOSTHOUSE tile defined in tile map");
+        return false;
     }
 
     public int getMapHeightTile() {
@@ -92,6 +99,10 @@ public class GameMap {
 
     public int getMapWidthTile() {
         return mapWidthTile;
+    }
+
+    public Point getGhostHouse() {
+        return ghostHouse;
     }
 
     public boolean isUsable() {

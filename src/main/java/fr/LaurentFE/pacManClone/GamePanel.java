@@ -637,21 +637,21 @@ public class GamePanel extends JPanel implements Runnable {
             tileCPosition.y += 1;
         }
 
-        if (gameMap.getTile(tileAPosition) == TileType.PATH) {
+        if (gameMap.getTile(tileAPosition) == TileType.PATH || gameMap.getTile(tileAPosition) == TileType.GHOSTHOUSE) {
             return new Rectangle(
                     tileAPosition.x * TILE_SIZE,
                     tileAPosition.y * TILE_SIZE,
                     TILE_SIZE,
                     TILE_SIZE
             );
-        } else if (gameMap.getTile(tileBPosition) == TileType.PATH) {
+        } else if (gameMap.getTile(tileBPosition) == TileType.PATH || gameMap.getTile(tileBPosition) == TileType.GHOSTHOUSE) {
             return new Rectangle(
                     tileBPosition.x * TILE_SIZE,
                     tileBPosition.y * TILE_SIZE,
                     TILE_SIZE,
                     TILE_SIZE
             );
-        } else if (gameMap.getTile(tileCPosition) == TileType.PATH) {
+        } else if (gameMap.getTile(tileCPosition) == TileType.PATH || gameMap.getTile(tileCPosition) == TileType.GHOSTHOUSE) {
             return new Rectangle(
                     tileCPosition.x * TILE_SIZE,
                     tileCPosition.y * TILE_SIZE,
@@ -722,13 +722,13 @@ public class GamePanel extends JPanel implements Runnable {
                 ((PAC_MAN.getHitBox().y + PAC_MAN.getHitBox().height-1) / TILE_SIZE));
         TileType lowerRightTileType = gameMap.getTile(lowerRightTile);
 
-        if (upperLeftTileType != TileType.PATH) {
+        if (upperLeftTileType != TileType.PATH && upperLeftTileType != TileType.GHOSTHOUSE) {
             PAC_MAN.bumpOutOfCollision(upperLeftTile);
-        } else if (upperRightTileType != TileType.PATH) {
+        } else if (upperRightTileType != TileType.PATH && upperRightTileType != TileType.GHOSTHOUSE) {
             PAC_MAN.bumpOutOfCollision(upperRightTile);
-        } else if (lowerLeftTileType != TileType.PATH) {
+        } else if (lowerLeftTileType != TileType.PATH && lowerLeftTileType != TileType.GHOSTHOUSE) {
             PAC_MAN.bumpOutOfCollision(lowerLeftTile);
-        } else if (lowerRightTileType != TileType.PATH) {
+        } else if (lowerRightTileType != TileType.PATH && lowerRightTileType != TileType.GHOSTHOUSE) {
             PAC_MAN.bumpOutOfCollision(lowerRightTile);
         } else {
             PAC_MAN.animateMouth();

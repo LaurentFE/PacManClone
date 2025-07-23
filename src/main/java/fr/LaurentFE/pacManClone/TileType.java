@@ -24,6 +24,7 @@ public enum TileType {
     DOUBLEOUTERDOWNRIGHTCORNER,
     OUTOFBOUNDS,
     DOOR,
+    GHOSTHOUSE,
     UNDEFINED
 
 }
