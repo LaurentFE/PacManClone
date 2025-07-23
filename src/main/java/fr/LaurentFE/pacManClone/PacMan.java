@@ -9,13 +9,9 @@ public class PacMan {
     private int mouthAngleIncrement;
     private final int moveSpeed;
     private final Rectangle hitBox;
-    private final int tileSize;
-    private final int size;
 
-    public PacMan(Point startingPosition, int tileSize, int size, Orientation startingOrientation, int moveSpeed) {
-        this.size = size;
-        this.tileSize = tileSize;
-        hitBox = new Rectangle(startingPosition.x, startingPosition.y, tileSize, tileSize);
+    public PacMan(Point startingPosition, Orientation startingOrientation, int moveSpeed) {
+        hitBox = new Rectangle(startingPosition.x, startingPosition.y, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE);
         orientation = startingOrientation;
         this.moveSpeed = moveSpeed;
         maxMouthAngle = 90;
@@ -48,13 +44,13 @@ public class PacMan {
 
     public void bumpOutOfCollision(Point collisionTileMapPosition) {
         if (orientation == Orientation.LEFT) {
-            hitBox.x = collisionTileMapPosition.x * tileSize + tileSize;
+            hitBox.x = collisionTileMapPosition.x * GamePanel.TILE_SIZE + GamePanel.TILE_SIZE;
         } else if (orientation == Orientation.RIGHT) {
-            hitBox.x = collisionTileMapPosition.x * tileSize - tileSize;
+            hitBox.x = collisionTileMapPosition.x * GamePanel.TILE_SIZE - GamePanel.TILE_SIZE;
         } else if (orientation == Orientation.UP) {
-            hitBox.y = collisionTileMapPosition.y * tileSize + tileSize;
+            hitBox.y = collisionTileMapPosition.y * GamePanel.TILE_SIZE + GamePanel.TILE_SIZE;
         } else if (orientation == Orientation.DOWN) {
-            hitBox.y = collisionTileMapPosition.y * tileSize - tileSize;
+            hitBox.y = collisionTileMapPosition.y * GamePanel.TILE_SIZE - GamePanel.TILE_SIZE;
         }
     }
 
@@ -72,10 +68,6 @@ public class PacMan {
 
     public Rectangle getHitBox() {
         return hitBox;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     public Point getPosition() {
