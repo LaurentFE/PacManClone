@@ -9,6 +9,7 @@ public class PacMan {
     private int mouthAngleIncrement;
     private final int moveSpeed;
     private final Rectangle hitBox;
+    private final GameMap gameMap;
 
     public PacMan(Point startingPosition, Orientation startingOrientation, int moveSpeed) {
         hitBox = new Rectangle(startingPosition.x, startingPosition.y, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE);
@@ -17,6 +18,7 @@ public class PacMan {
         maxMouthAngle = 90;
         currentMouthAngle = maxMouthAngle;
         mouthAngleIncrement = -5;
+        gameMap = GameMap.getInstance();
     }
 
     public void animateMouth() {
@@ -58,31 +60,139 @@ public class PacMan {
         return orientation;
     }
 
-    public void setOrientation(Orientation orientation) {
-        this.orientation = orientation;
-    }
-
     public int getCurrentMouthAngle() {
         return currentMouthAngle;
-    }
-
-    public Rectangle getHitBox() {
-        return hitBox;
     }
 
     public Point getPosition() {
         return hitBox.getLocation();
     }
 
-    public int getMoveSpeed() {
-        return moveSpeed;
+    private Rectangle getNextPathTileForOrientation(Orientation nextOrientation) {
+        Point directionModifier;
+        if (nextOrientation == Orientation.UP) {
+            directionModifier = new Point(0, -1);
+        } else if (nextOrientation == Orientation.LEFT) {
+            directionModifier = new Point(-1, 0);
+        } else if (nextOrientation == Orientation.DOWN) {
+            directionModifier = new Point(0, 1);
+        } else {
+            directionModifier = new Point(1, 0);
+        }
+        Point tileAPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.y);
+        Point tileBPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.y);
+        Point tileCPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.y);
+
+        if (nextOrientation == Orientation.UP || nextOrientation == Orientation.DOWN) {
+            tileAPosition.x -= 1;
+            tileCPosition.x += 1;
+        } else {
+            tileAPosition.y -= 1;
+            tileCPosition.y += 1;
+        }
+
+        if (canGoThroughTile(tileAPosition)) {
+            return new Rectangle(
+                    tileAPosition.x * GamePanel.TILE_SIZE,
+                    tileAPosition.y * GamePanel.TILE_SIZE,
+                    GamePanel.TILE_SIZE,
+                    GamePanel.TILE_SIZE
+            );
+        } else if (canGoThroughTile(tileBPosition)) {
+            return new Rectangle(
+                    tileBPosition.x * GamePanel.TILE_SIZE,
+                    tileBPosition.y * GamePanel.TILE_SIZE,
+                    GamePanel.TILE_SIZE,
+                    GamePanel.TILE_SIZE
+            );
+        } else if (canGoThroughTile(tileCPosition)) {
+            return new Rectangle(
+                    tileCPosition.x * GamePanel.TILE_SIZE,
+                    tileCPosition.y * GamePanel.TILE_SIZE,
+                    GamePanel.TILE_SIZE,
+                    GamePanel.TILE_SIZE
+            );
+        } else {
+            return new Rectangle();
+        }
     }
 
-    public void setX(int x) {
-        hitBox.x = x;
+    private boolean canGetIntoPath(Orientation nextOrientation) {
+        Rectangle pathTile = getNextPathTileForOrientation(nextOrientation);
+        if (pathTile.equals(new Rectangle()))
+            return false;
+
+        if (nextOrientation == Orientation.UP
+                || nextOrientation == Orientation.DOWN) {
+            if (pathTile.x - hitBox.x < moveSpeed
+                    && pathTile.x - hitBox.x > -moveSpeed) {
+                hitBox.x = pathTile.x;
+                return true;
+            }
+        } else {
+            if (pathTile.y - hitBox.y < moveSpeed
+                    && pathTile.y - hitBox.y > -moveSpeed) {
+                hitBox.y =pathTile.y;
+                return true;
+            }
+        }
+        return false;
     }
 
-    public void setY(int y) {
-        hitBox.y = y;
+    private void updatePosition() {
+        move();
+        Point upperLeftTile = new Point(
+                (hitBox.x / GamePanel.TILE_SIZE),
+                (hitBox.y / GamePanel.TILE_SIZE));
+        Point upperRightTile = new Point(
+                ((hitBox.x + hitBox.width-1) / GamePanel.TILE_SIZE),
+                (hitBox.y / GamePanel.TILE_SIZE));
+        Point lowerLeftTile = new Point(
+                (hitBox.x / GamePanel.TILE_SIZE),
+                ((hitBox.y + hitBox.height-1) / GamePanel.TILE_SIZE));
+        Point lowerRightTile = new Point(
+                ((hitBox.x + hitBox.width-1) / GamePanel.TILE_SIZE),
+                ((hitBox.y + hitBox.height-1) / GamePanel.TILE_SIZE));
+
+        if (!canGoThroughTile(upperLeftTile)) {
+            bumpOutOfCollision(upperLeftTile);
+        } else if (!canGoThroughTile(upperRightTile)) {
+            bumpOutOfCollision(upperRightTile);
+        } else if (!canGoThroughTile(lowerLeftTile)) {
+            bumpOutOfCollision(lowerLeftTile);
+        } else if (!canGoThroughTile(lowerRightTile)) {
+            bumpOutOfCollision(lowerRightTile);
+        } else {
+            animateMouth();
+        }
+    }
+
+    public boolean canGoThroughTile(Point tileCoords) {
+        return gameMap.getTile(tileCoords) == TileType.PATH
+                || gameMap.getTile(tileCoords) == TileType.GHOSTHOUSE;
+    }
+
+    private boolean tryToChangeDirection(Orientation nextOrientation) {
+        if (nextOrientation == orientation)
+            return false;
+
+        if (canGetIntoPath(nextOrientation)) {
+            orientation = nextOrientation;
+            updatePosition();
+            return true;
+        }
+        return false;
+    }
+
+    public void update(Orientation nextOrientation) {
+        if (!tryToChangeDirection(nextOrientation)) {
+            updatePosition();
+        }
     }
 }
