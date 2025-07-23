@@ -42,14 +42,6 @@ public class Ghost {
         return color;
     }
 
-    public Rectangle getHitBox() {
-        return hitBox;
-    }
-
-    public int getMoveSpeed() {
-        return moveSpeed;
-    }
-
     public Point getPosition() {
         return hitBox.getLocation();
     }
