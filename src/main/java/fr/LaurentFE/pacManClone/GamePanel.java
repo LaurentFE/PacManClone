@@ -1,6 +1,10 @@
 package fr.LaurentFE.pacManClone;
 
 import fr.LaurentFE.pacManClone.ghost.Ghost;
+import fr.LaurentFE.pacManClone.ghost.personality.Blinky;
+import fr.LaurentFE.pacManClone.ghost.personality.Clyde;
+import fr.LaurentFE.pacManClone.ghost.personality.Inky;
+import fr.LaurentFE.pacManClone.ghost.personality.Pinky;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,31 +24,34 @@ public class GamePanel extends JPanel implements Runnable {
             DEFAULT_ORIENTATION,
             MOVE_SPEED);
     public static final Ghost BLINKY = new Ghost(
-            new Point(TILE_SIZE *12, TILE_SIZE *16),
+            new Point(TILE_SIZE *9, TILE_SIZE *14),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
-            Color.RED);
+            Color.RED,
+            new Blinky());
     public static final Ghost PINKY = new Ghost(
             new Point(TILE_SIZE *13, TILE_SIZE *16),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
-            Color.PINK);
+            Color.PINK,
+            new Pinky());
     public static final Ghost INKY = new Ghost(
             new Point(TILE_SIZE *14, TILE_SIZE *16),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
-            Color.BLUE);
+            Color.BLUE,
+            new Inky());
     public static final Ghost CLYDE = new Ghost(
             new Point(TILE_SIZE *15, TILE_SIZE *16),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
-            Color.ORANGE);
+            Color.ORANGE,
+            new Clyde());
 
     private final GameMap gameMap;
 
-    public GamePanel(GameMap gameMap) {
-
-        this.gameMap = gameMap;
+    public GamePanel() {
+        this.gameMap = GameMap.getInstance();
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()* TILE_SIZE, gameMap.getMapHeightTile()* TILE_SIZE));
         setBackground(Color.BLACK);
         setDoubleBuffered(true); // Render is made on a second panel, then copied to the main widow => smoother rendering
@@ -630,21 +637,21 @@ public class GamePanel extends JPanel implements Runnable {
             tileCPosition.y += 1;
         }
 
-        if (gameMap.getTile(tileAPosition) == TileType.PATH) {
+        if (gameMap.getTile(tileAPosition) == TileType.PATH || gameMap.getTile(tileAPosition) == TileType.GHOSTHOUSE) {
             return new Rectangle(
                     tileAPosition.x * TILE_SIZE,
                     tileAPosition.y * TILE_SIZE,
                     TILE_SIZE,
                     TILE_SIZE
             );
-        } else if (gameMap.getTile(tileBPosition) == TileType.PATH) {
+        } else if (gameMap.getTile(tileBPosition) == TileType.PATH || gameMap.getTile(tileBPosition) == TileType.GHOSTHOUSE) {
             return new Rectangle(
                     tileBPosition.x * TILE_SIZE,
                     tileBPosition.y * TILE_SIZE,
                     TILE_SIZE,
                     TILE_SIZE
             );
-        } else if (gameMap.getTile(tileCPosition) == TileType.PATH) {
+        } else if (gameMap.getTile(tileCPosition) == TileType.PATH || gameMap.getTile(tileCPosition) == TileType.GHOSTHOUSE) {
             return new Rectangle(
                     tileCPosition.x * TILE_SIZE,
                     tileCPosition.y * TILE_SIZE,
@@ -715,13 +722,13 @@ public class GamePanel extends JPanel implements Runnable {
                 ((PAC_MAN.getHitBox().y + PAC_MAN.getHitBox().height-1) / TILE_SIZE));
         TileType lowerRightTileType = gameMap.getTile(lowerRightTile);
 
-        if (upperLeftTileType != TileType.PATH) {
+        if (upperLeftTileType != TileType.PATH && upperLeftTileType != TileType.GHOSTHOUSE) {
             PAC_MAN.bumpOutOfCollision(upperLeftTile);
-        } else if (upperRightTileType != TileType.PATH) {
+        } else if (upperRightTileType != TileType.PATH && upperRightTileType != TileType.GHOSTHOUSE) {
             PAC_MAN.bumpOutOfCollision(upperRightTile);
-        } else if (lowerLeftTileType != TileType.PATH) {
+        } else if (lowerLeftTileType != TileType.PATH && lowerLeftTileType != TileType.GHOSTHOUSE) {
             PAC_MAN.bumpOutOfCollision(lowerLeftTile);
-        } else if (lowerRightTileType != TileType.PATH) {
+        } else if (lowerRightTileType != TileType.PATH && lowerRightTileType != TileType.GHOSTHOUSE) {
             PAC_MAN.bumpOutOfCollision(lowerRightTile);
         } else {
             PAC_MAN.animateMouth();
@@ -730,6 +737,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void update() {
         updatePacMan();
+        BLINKY.update();
     }
 
     @Override

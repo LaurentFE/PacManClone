@@ -20,13 +20,14 @@ public class GameFrame extends JFrame {
             }
         });
 
-        GameMap gameMap = new GameMap("src/main/resources/level0");
+        GameMap gameMap = GameMap.getInstance();
+        gameMap.loadMap("src/main/resources/level0");
         if (!gameMap.isUsable()) {
             closeUnusableMap();
             mainDisplay = null;
             return;
         }
-        mainDisplay = new GamePanel(gameMap);
+        mainDisplay = new GamePanel();
 
         add(mainDisplay, BorderLayout.CENTER);
         pack();
