@@ -740,19 +740,6 @@ public class GamePanel extends JPanel implements Runnable {
         updatePacMan();
     }
 
-    public static Point convertPositionToTile(Point position) {
-        return new Point(
-          position.x/TILE_SIZE,
-          position.y/TILE_SIZE
-        );
-    }
-
-    public static Dimension getMapDimensions() {
-        return new Dimension(
-                getMapDimensions()
-        );
-    }
-
     @Override
     public void run() {
         final double FPS = 60;
