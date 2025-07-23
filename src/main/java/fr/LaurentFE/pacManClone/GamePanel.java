@@ -1,6 +1,10 @@
 package fr.LaurentFE.pacManClone;
 
 import fr.LaurentFE.pacManClone.ghost.Ghost;
+import fr.LaurentFE.pacManClone.ghost.personality.Blinky;
+import fr.LaurentFE.pacManClone.ghost.personality.Clyde;
+import fr.LaurentFE.pacManClone.ghost.personality.Inky;
+import fr.LaurentFE.pacManClone.ghost.personality.Pinky;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,22 +27,26 @@ public class GamePanel extends JPanel implements Runnable {
             new Point(TILE_SIZE *12, TILE_SIZE *16),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
-            Color.RED);
+            Color.RED,
+            new Blinky());
     public static final Ghost PINKY = new Ghost(
             new Point(TILE_SIZE *13, TILE_SIZE *16),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
-            Color.PINK);
+            Color.PINK,
+            new Pinky());
     public static final Ghost INKY = new Ghost(
             new Point(TILE_SIZE *14, TILE_SIZE *16),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
-            Color.BLUE);
+            Color.BLUE,
+            new Inky());
     public static final Ghost CLYDE = new Ghost(
             new Point(TILE_SIZE *15, TILE_SIZE *16),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
-            Color.ORANGE);
+            Color.ORANGE,
+            new Clyde());
 
     private final GameMap gameMap;
 
@@ -730,6 +738,19 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void update() {
         updatePacMan();
+    }
+
+    public static Point convertPositionToTile(Point position) {
+        return new Point(
+          position.x/TILE_SIZE,
+          position.y/TILE_SIZE
+        );
+    }
+
+    public static Dimension getMapDimensions() {
+        return new Dimension(
+                getMapDimensions()
+        );
     }
 
     @Override
