@@ -1,6 +1,7 @@
 package fr.LaurentFE.pacManClone;
 
 import fr.LaurentFE.pacManClone.ghost.Ghost;
+import fr.LaurentFE.pacManClone.ghost.GhostState;
 import fr.LaurentFE.pacManClone.ghost.personality.Blinky;
 import fr.LaurentFE.pacManClone.ghost.personality.Clyde;
 import fr.LaurentFE.pacManClone.ghost.personality.Inky;
@@ -16,7 +17,7 @@ public class GamePanel extends JPanel implements Runnable {
     private final GameKeyHandler gameKeyHandler;
     private Thread gameThread;
 
-    public static final int TILE_SIZE = 32;
+    public static final int TILE_SIZE = 16;
     private static final Orientation DEFAULT_ORIENTATION = Orientation.RIGHT;
     private static final int MOVE_SPEED = TILE_SIZE /8;
     public static final PacMan PAC_MAN = new PacMan(
@@ -499,19 +500,74 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void drawGhost(Graphics2D g2d, Ghost ghost) {
-        g2d.setColor(ghost.getColor());
-        g2d.fillArc(ghost.getPosition().x + TILE_SIZE /16,
-                ghost.getPosition().y + TILE_SIZE /16,
-                TILE_SIZE -  TILE_SIZE /8,
-                3* TILE_SIZE /4,
+        if (ghost.getState() == GhostState.EATEN) {
+            drawGhostEyes(g2d, ghost);
+        } else {
+            if (ghost.getState() == GhostState.FRIGHTENED) {
+                g2d.setColor(Color.BLUE);
+                drawGhostBody(g2d,ghost);
+                drawGhostSkirt(g2d, ghost);
+                drawGhostScaredFace(g2d, ghost);
+            } else {
+                g2d.setColor(ghost.getColor());
+                drawGhostBody(g2d,ghost);
+                drawGhostSkirt(g2d, ghost);
+                drawGhostEyes(g2d, ghost);
+            }
+
+
+        }
+    }
+
+    private void drawGhostScaredFace(Graphics2D g2d, Ghost ghost) {
+        g2d.setColor(Color.PINK);
+        int eyeSize = 2* TILE_SIZE /16;
+        Point leftEyePosition = new Point(ghost.getPosition().x + 5* TILE_SIZE /16, ghost.getPosition().y + 6* TILE_SIZE /16);
+        Point rightEyeOffset = new Point(3* TILE_SIZE /16 + eyeSize, 0);
+        g2d.fillRect(leftEyePosition.x,
+                leftEyePosition.y,
+                eyeSize, eyeSize);
+        g2d.fillRect(leftEyePosition.x + rightEyeOffset.x,
+                leftEyePosition.y + rightEyeOffset.y,
+                eyeSize, eyeSize);
+        Point mouthLeftCorner = new Point (ghost.getPosition().x + 3 * TILE_SIZE / 16, ghost.getPosition().y + 11* TILE_SIZE /16);
+        g2d.drawLine(mouthLeftCorner.x,
+                mouthLeftCorner.y,
+                mouthLeftCorner.x + TILE_SIZE / 16,
+                mouthLeftCorner.y - TILE_SIZE / 16);
+        g2d.drawLine(mouthLeftCorner.x + TILE_SIZE / 16,
+                mouthLeftCorner.y - TILE_SIZE / 16,
+                mouthLeftCorner.x + 3 * TILE_SIZE / 16,
+                mouthLeftCorner.y);
+        g2d.drawLine(mouthLeftCorner.x + 3 * TILE_SIZE / 16,
+                mouthLeftCorner.y,
+                mouthLeftCorner.x + 5 * TILE_SIZE / 16,
+                mouthLeftCorner.y - TILE_SIZE / 16);
+        g2d.drawLine(mouthLeftCorner.x + 5 * TILE_SIZE / 16,
+                mouthLeftCorner.y - TILE_SIZE / 16,
+                mouthLeftCorner.x + 7 * TILE_SIZE / 16,
+                mouthLeftCorner.y);
+        g2d.drawLine(mouthLeftCorner.x + 7 * TILE_SIZE / 16,
+                mouthLeftCorner.y,
+                mouthLeftCorner.x + 9 * TILE_SIZE / 16,
+                mouthLeftCorner.y - TILE_SIZE / 16);
+        g2d.drawLine(mouthLeftCorner.x + 9 * TILE_SIZE / 16,
+                mouthLeftCorner.y - TILE_SIZE / 16,
+                mouthLeftCorner.x + 10 * TILE_SIZE / 16,
+                mouthLeftCorner.y);
+    }
+
+    private void drawGhostBody(Graphics2D g2d, Ghost ghost) {
+        g2d.fillArc(ghost.getPosition().x + TILE_SIZE / 16,
+                ghost.getPosition().y + TILE_SIZE / 16,
+                TILE_SIZE - TILE_SIZE / 8,
+                3 * TILE_SIZE / 4,
                 0,
                 180);
-        g2d.fillRect(ghost.getPosition().x + TILE_SIZE /16,
-                ghost.getPosition().y + 3* TILE_SIZE /8,
-                14* TILE_SIZE /16,
-                7* TILE_SIZE /16);
-        drawGhostSkirt(g2d, ghost);
-        drawGhostEyes(g2d, ghost);
+        g2d.fillRect(ghost.getPosition().x + TILE_SIZE / 16,
+                ghost.getPosition().y + 3 * TILE_SIZE / 8,
+                14 * TILE_SIZE / 16,
+                7 * TILE_SIZE / 16);
     }
 
     private void drawGhostSkirt(Graphics2D g2d, Ghost ghost) {
