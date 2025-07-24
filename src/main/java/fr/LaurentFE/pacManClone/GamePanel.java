@@ -42,7 +42,7 @@ public class GamePanel extends JPanel implements Runnable {
             Color.CYAN,
             new Inky());
     public static final Ghost CLYDE = new Ghost(
-            new Point(TILE_SIZE *15, TILE_SIZE *16),
+            new Point(TILE_SIZE *15, TILE_SIZE *14),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.ORANGE,
@@ -612,6 +612,7 @@ public class GamePanel extends JPanel implements Runnable {
         BLINKY.update();
         PINKY.update();
         INKY.update();
+        CLYDE.update();
     }
 
     @Override
