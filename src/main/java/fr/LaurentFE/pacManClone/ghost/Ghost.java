@@ -7,7 +7,9 @@ import fr.LaurentFE.pacManClone.TileType;
 import fr.LaurentFE.pacManClone.ghost.personality.GhostPersonality;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class Ghost {
     private Orientation orientation;
@@ -15,17 +17,25 @@ public class Ghost {
     private final Rectangle hitBox;
     private final Color color;
     private GhostState state;
-    private final GhostPersonality personality;
+    private final GhostPersonality chasePersonality;
+    private final Point scatterTargetTile;
+    private  final Point eatenTargetTile = GameMap.getInstance().getGhostHouse();
     private final GameMap gameMap;
     private Point lastCrossroadTile;
 
-    public Ghost(Point startingPosition, Orientation startingOrientation, int moveSpeed, Color color, GhostPersonality personality) {
+    public Ghost(Point startingPosition,
+                 Orientation startingOrientation,
+                 int moveSpeed,
+                 Color color,
+                 GhostPersonality chasePersonality,
+                 Point scatterTargetTile) {
         hitBox = new Rectangle(startingPosition.x, startingPosition.y, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE);
         orientation = startingOrientation;
         this.moveSpeed = moveSpeed;
         this.color = color;
         state = GhostState.CHASE;
-        this.personality = personality;
+        this.chasePersonality = chasePersonality;
+        this.scatterTargetTile = scatterTargetTile;
         gameMap = GameMap.getInstance();
         lastCrossroadTile = new Point(0, 0);
     }
@@ -188,8 +198,159 @@ public class Ghost {
         return possibleDirections > 2;
     }
 
+    private boolean alreadyDecidedAtThisCrossroad() {
+        Point currentTile = new Point(
+                hitBox.x / GamePanel.TILE_SIZE,
+                hitBox.y / GamePanel.TILE_SIZE);
+        return getLastCrossroadTile().x == currentTile.x
+                && getLastCrossroadTile().y == currentTile.y;
+    }
+
+    private boolean isFacingAWall() {
+        HashMap<Orientation, Point> directionModifier = new HashMap<>();
+        directionModifier.put(Orientation.UP, new Point(0, -1));
+        directionModifier.put(Orientation.LEFT, new Point(-1, 0));
+        directionModifier.put(Orientation.DOWN, new Point(0, 1));
+        directionModifier.put(Orientation.RIGHT, new Point(1, 0));
+
+        Point tileInFront = new Point(hitBox.x / GamePanel.TILE_SIZE, hitBox.y / GamePanel.TILE_SIZE);
+        tileInFront.x += directionModifier.get(orientation).x;
+        tileInFront.y += directionModifier.get(orientation).y;
+
+        return !canGoThroughTile(tileInFront);
+    }
+
+    public ArrayList<Point> getConsideredMoveTiles() {
+        HashMap<Orientation, Point> directionModifier = new HashMap<>();
+        directionModifier.put(Orientation.UP, new Point(0, -1));
+        directionModifier.put(Orientation.LEFT, new Point(-1, 0));
+        directionModifier.put(Orientation.DOWN, new Point(0, 1));
+        directionModifier.put(Orientation.RIGHT, new Point(1, 0));
+
+        Point tileAbovePosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).y);
+        Point tileOnLeftPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).y);
+        Point tileBelowPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).y);
+        Point tileOnRightPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).y);
+
+        ArrayList<Point> consideredMoveTiles = new ArrayList<>();
+        if (orientation != Orientation.DOWN && GamePanel.CLYDE.canGoThroughTile(tileAbovePosition))
+            consideredMoveTiles.add(tileAbovePosition);
+        if (orientation != Orientation.RIGHT && GamePanel.CLYDE.canGoThroughTile(tileOnLeftPosition))
+            consideredMoveTiles.add(tileOnLeftPosition);
+        if (orientation != Orientation.UP && GamePanel.CLYDE.canGoThroughTile(tileBelowPosition))
+            consideredMoveTiles.add(tileBelowPosition);
+        if (orientation != Orientation.LEFT && GamePanel.CLYDE.canGoThroughTile(tileOnRightPosition))
+            consideredMoveTiles.add(tileOnRightPosition);
+
+        return consideredMoveTiles;
+    }
+
+    public Point getNextMoveTile(Point targetTile) {
+        Point finalTile = new Point();
+        int squaredDist = Integer.MAX_VALUE;
+        for (Point consideredTile : getConsideredMoveTiles()) {
+            int relativeXDist = targetTile.x - consideredTile.x;
+            int relativeYDist = targetTile.y - consideredTile.y;
+            int squaredDistanceToTarget = relativeXDist * relativeXDist + relativeYDist * relativeYDist;
+            if (squaredDistanceToTarget < squaredDist) {
+                squaredDist = squaredDistanceToTarget;
+                finalTile = consideredTile;
+            }
+        }
+
+        return finalTile;
+    }
+
+    public Orientation getOrientationToGoToTile(Point tile) {
+        Point currentPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE,
+                hitBox.y / GamePanel.TILE_SIZE);
+        if (tile.x == currentPosition.x && tile.y < currentPosition.y)
+            return Orientation.UP;
+        else if (tile.x < currentPosition.x && tile.y == currentPosition.y)
+            return Orientation.LEFT;
+        else if (tile.x == currentPosition.x && tile.y > currentPosition.y)
+            return Orientation.DOWN;
+        else if (tile.x > currentPosition.x && tile.y == currentPosition.y)
+            return Orientation.RIGHT;
+        else
+            return orientation;
+    }
+
+    public Orientation getNextScatterMovementOrientation() {
+        Point nextMoveTile = getNextMoveTile(scatterTargetTile);
+        return getOrientationToGoToTile(nextMoveTile);
+    }
+
+    public Point getBehindTile() {
+        HashMap<Orientation, Point> directionModifier = new HashMap<>();
+        directionModifier.put(Orientation.UP, new Point(0, -1));
+        directionModifier.put(Orientation.LEFT, new Point(-1, 0));
+        directionModifier.put(Orientation.DOWN, new Point(0, 1));
+        directionModifier.put(Orientation.RIGHT, new Point(1, 0));
+        Point tileAbovePosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).y);
+        Point tileOnLeftPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).y);
+        Point tileBelowPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).y);
+        Point tileOnRightPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).x,
+                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).y);
+        return switch (orientation) {
+            case DOWN -> tileAbovePosition;
+            case RIGHT -> tileOnLeftPosition;
+            case UP -> tileBelowPosition;
+            case LEFT -> tileOnRightPosition;
+        };
+    }
+
+    public Orientation getNextFrightenedMovementOrientation() {
+        ArrayList<Point> consideredMoveTiles = getConsideredMoveTiles();
+        if (consideredMoveTiles.size() > 1) {
+            consideredMoveTiles.add(getBehindTile());
+            Random random = new Random();
+            return getOrientationToGoToTile(consideredMoveTiles.get(random.nextInt(consideredMoveTiles.size())));
+        }
+        return getOrientationToGoToTile(consideredMoveTiles.getFirst());
+    }
+
+    public Orientation getNextEatenMovementOrientation() {
+        Point currentPosition = new Point(
+                hitBox.x / GamePanel.TILE_SIZE,
+                hitBox.y / GamePanel.TILE_SIZE);
+
+        if (currentPosition.x != eatenTargetTile.x || currentPosition.y != eatenTargetTile.y)
+            return getOrientationToGoToTile(getNextMoveTile(eatenTargetTile));
+        return Orientation.DOWN;
+    }
+
+    public Orientation getNextMovementOrientation() {
+        if (alreadyDecidedAtThisCrossroad()
+                && !isFacingAWall())
+            return orientation;
+
+        return switch (state) {
+            case CHASE -> chasePersonality.getNextMovementOrientation();
+            case SCATTER -> getNextScatterMovementOrientation();
+            case FRIGHTENED -> getNextFrightenedMovementOrientation();
+            case EATEN -> getNextEatenMovementOrientation();
+        };
+    }
+
     private boolean mustChangeDirection() {
-        Orientation nextOrientation = personality.getNextMovementOrientation();
+        Orientation nextOrientation = getNextMovementOrientation();
         if (nextOrientation == orientation)
             return false;
 
