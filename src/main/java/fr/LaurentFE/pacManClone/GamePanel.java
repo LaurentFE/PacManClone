@@ -28,25 +28,29 @@ public class GamePanel extends JPanel implements Runnable {
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.RED,
-            new Blinky());
+            new Blinky(),
+            new Point(0,0));
     public static final Ghost PINKY = new Ghost(
             new Point(TILE_SIZE *18, TILE_SIZE *14),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.PINK,
-            new Pinky());
+            new Pinky(),
+            new Point(GameMap.getInstance().getMapWidthTile() - 1, 0));
     public static final Ghost INKY = new Ghost(
             new Point(TILE_SIZE *12, TILE_SIZE *14),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.CYAN,
-            new Inky());
+            new Inky(),
+            new Point(GameMap.getInstance().getMapWidthTile() - 1, GameMap.getInstance().getMapHeightTile() - 1));
     public static final Ghost CLYDE = new Ghost(
             new Point(TILE_SIZE *15, TILE_SIZE *14),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.ORANGE,
-            new Clyde());
+            new Clyde(),
+            new Point(0, GameMap.getInstance().getMapHeightTile() - 1));
 
     private final GameMap gameMap;
 
