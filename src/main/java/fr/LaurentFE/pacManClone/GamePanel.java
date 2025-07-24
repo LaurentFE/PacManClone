@@ -17,7 +17,7 @@ public class GamePanel extends JPanel implements Runnable {
     private final GameKeyHandler gameKeyHandler;
     private Thread gameThread;
 
-    public static final int TILE_SIZE = 16;
+    public static final int TILE_SIZE = 32;
     private static final Orientation DEFAULT_ORIENTATION = Orientation.RIGHT;
     private static final int MOVE_SPEED = TILE_SIZE /8;
     public static final PacMan PAC_MAN = new PacMan(
