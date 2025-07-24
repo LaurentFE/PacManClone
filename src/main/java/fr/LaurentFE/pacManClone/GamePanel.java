@@ -36,10 +36,10 @@ public class GamePanel extends JPanel implements Runnable {
             Color.PINK,
             new Pinky());
     public static final Ghost INKY = new Ghost(
-            new Point(TILE_SIZE *14, TILE_SIZE *16),
+            new Point(TILE_SIZE *12, TILE_SIZE *14),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
-            Color.BLUE,
+            Color.CYAN,
             new Inky());
     public static final Ghost CLYDE = new Ghost(
             new Point(TILE_SIZE *15, TILE_SIZE *16),
@@ -611,6 +611,7 @@ public class GamePanel extends JPanel implements Runnable {
         PAC_MAN.update(gameKeyHandler.getNextOrientation());
         BLINKY.update();
         PINKY.update();
+        INKY.update();
     }
 
     @Override
