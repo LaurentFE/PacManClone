@@ -30,7 +30,7 @@ public class GamePanel extends JPanel implements Runnable {
             Color.RED,
             new Blinky());
     public static final Ghost PINKY = new Ghost(
-            new Point(TILE_SIZE *13, TILE_SIZE *16),
+            new Point(TILE_SIZE *18, TILE_SIZE *14),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.PINK,
@@ -610,6 +610,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void update() {
         PAC_MAN.update(gameKeyHandler.getNextOrientation());
         BLINKY.update();
+        PINKY.update();
     }
 
     @Override
