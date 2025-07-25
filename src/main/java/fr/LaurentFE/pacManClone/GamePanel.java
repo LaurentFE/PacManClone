@@ -54,9 +54,15 @@ public class GamePanel extends JPanel implements Runnable {
             new Point(0, GameMap.getInstance().getMapHeightTile() - 1));
 
     private final GameMap gameMap;
+    private final Set<Pellet> pellets;
+    private final int pelletSize = 4;
+    private final int pelletOffset = (TILE_SIZE - pelletSize) / 2;
+    private final int powerPelletSize = 16;
+    private final int powerPelletOffset = (TILE_SIZE - powerPelletSize) / 2;
 
     public GamePanel() {
         this.gameMap = GameMap.getInstance();
+        pellets = gameMap.loadPellets("src/main/resources/level0_pellets");
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()* TILE_SIZE, gameMap.getMapHeightTile()* TILE_SIZE));
         setBackground(Color.BLACK);
         setDoubleBuffered(true); // Render is made on a second panel, then copied to the main widow => smoother rendering
@@ -82,6 +88,7 @@ public class GamePanel extends JPanel implements Runnable {
         Graphics2D g2d = (Graphics2D) g;
 
         drawMap(g2d);
+        drawPellets(g2d);
         drawPacMan(g2d);
         drawGhost(g2d, BLINKY);
         drawGhost(g2d, INKY);
@@ -667,12 +674,81 @@ public class GamePanel extends JPanel implements Runnable {
                 360 - PAC_MAN.getCurrentMouthAngle());
     }
 
+    private void drawPellets(Graphics2D g2d) {
+        g2d.setColor(Color.PINK);
+        for(Pellet pellet : pellets) {
+            if (pellet.isPowerPellet())
+                g2d.fillOval(pellet.getTileIndex().x * TILE_SIZE + powerPelletOffset,
+                        pellet.getTileIndex().y * TILE_SIZE + powerPelletOffset,
+                        powerPelletSize,
+                        powerPelletSize);
+            else
+                g2d.fillRect(pellet.getTileIndex().x * TILE_SIZE + pelletOffset,
+                        pellet.getTileIndex().y * TILE_SIZE + pelletOffset,
+                        pelletSize,
+                        pelletSize);
+        }
+    }
+
+    private Rectangle getPelletHitBox(Pellet pellet) {
+        if (pellet.isPowerPellet()) {
+            return new Rectangle(
+                    pellet.getTileIndex().x * TILE_SIZE + powerPelletOffset,
+                    pellet.getTileIndex().y * TILE_SIZE + powerPelletOffset,
+                    powerPelletSize,
+                    powerPelletSize);
+        } else {
+            return new Rectangle(
+                    pellet.getTileIndex().x * TILE_SIZE + pelletOffset,
+                    pellet.getTileIndex().y * TILE_SIZE + pelletOffset,
+                    pelletSize,
+                    pelletSize);
+        }
+    }
+
+    private void checkCollisionWithPellets() {
+        if(pellets != null) {
+            Set<Pellet> eatenPellets = new HashSet<>();
+            for(Pellet pellet : pellets) {
+                Rectangle pelletHitBox = getPelletHitBox(pellet);
+                Rectangle pacManHitBox = new Rectangle(
+                        PAC_MAN.getPosition().x,
+                        PAC_MAN.getPosition().y,
+                        TILE_SIZE,
+                        TILE_SIZE);
+                if (pelletHitBox.intersection(pacManHitBox).getSize().equals(pelletHitBox.getSize())) {
+                    eatenPellets.add(pellet);
+                }
+            }
+            for(Pellet pellet : eatenPellets) {
+                pellets.remove(pellet);
+            }
+        }
+    }
+
+    private void closeOnVictory() {
+        JOptionPane.showMessageDialog(
+                null,
+                """
+                        Congratulations !
+                        You have eaten all the pellets on the map.
+                        Victory is yours !""",
+                "VICTORY",
+                JOptionPane.INFORMATION_MESSAGE);
+        stopGameThread();
+        GameFrame parentFrame = (GameFrame) SwingUtilities.getWindowAncestor(this);
+        parentFrame.closeGame();
+    }
+
     public void update() {
         PAC_MAN.update(gameKeyHandler.getNextOrientation());
         BLINKY.update();
         PINKY.update();
         INKY.update();
         CLYDE.update();
+        if (pellets.isEmpty())
+            closeOnVictory();
+        checkCollisionWithPellets();
     }
 
     @Override
