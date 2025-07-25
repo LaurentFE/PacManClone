@@ -4,7 +4,9 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GameMap {
     private static GameMap INSTANCE;
@@ -117,5 +119,41 @@ public class GameMap {
             return map[position.y][position.x];
         }
         return TileType.UNDEFINED;
+    }
+
+    public Set<Pellet> loadPellets(String filePath) {
+        try {
+            return loadPelletMap(filePath);
+        } catch (IOException e) {
+            System.err.println("Couldn't read file '"+filePath+"'");
+            return null;
+        }
+    }
+
+    private Set<Pellet> loadPelletMap(String filePath) throws IOException {
+        Path pelletMapFilePath = Path.of(filePath);
+        List<String> pelletMap = Files.readAllLines(pelletMapFilePath);
+        return convertPelletMap(pelletMap);
+    }
+
+    private Set<Pellet> convertPelletMap(List<String> pelletMap) {
+        Set<Pellet> pellets = new HashSet<>();
+        for (int y = 0; y < mapHeightTile; y++) {
+            for (int x = 0; x < mapWidthTile; x++) {
+                if (y >= pelletMap.size() || x >= pelletMap.get(y).length()) {
+                    System.err.println("Provided pellet map size ("+pelletMap.get(y).length()+"*"+pelletMap.size()+" " +
+                            "doesn't coincide with mapWidthTile("+mapWidthTile+") " +
+                            "or mapHeightTile("+mapHeightTile+") requirements on line "+y);
+                    return null;
+                }
+                char pellet = pelletMap.get(y).charAt(x);
+                switch(pellet) {
+                    case '.' : pellets.add(new Pellet(x, y, false)); break;
+                    case 'X' : pellets.add(new Pellet(x, y, true)); break ;
+                    default : if (pellet != '0') System.err.println("IGNORED - Undefined tile type in pellet map : "+pellet); break;
+                }
+            }
+        }
+        return pellets;
     }
 }

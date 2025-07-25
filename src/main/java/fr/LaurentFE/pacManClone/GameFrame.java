@@ -62,4 +62,8 @@ public class GameFrame extends JFrame {
 
         dispose();
     }
+
+    public void closeGame() {
+        dispose();
+    }
 }
