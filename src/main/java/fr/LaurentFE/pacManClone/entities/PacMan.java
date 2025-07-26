@@ -1,4 +1,10 @@
-package fr.LaurentFE.pacManClone;
+package fr.LaurentFE.pacManClone.entities;
+
+import fr.LaurentFE.pacManClone.*;
+import fr.LaurentFE.pacManClone.map.GameMap;
+import fr.LaurentFE.pacManClone.map.Position;
+import fr.LaurentFE.pacManClone.map.TileIndex;
+import fr.LaurentFE.pacManClone.map.TileType;
 
 import java.awt.*;
 

@@ -1,11 +1,14 @@
 package fr.LaurentFE.pacManClone;
 
-import fr.LaurentFE.pacManClone.ghost.Ghost;
-import fr.LaurentFE.pacManClone.ghost.GhostState;
-import fr.LaurentFE.pacManClone.ghost.personality.Blinky;
-import fr.LaurentFE.pacManClone.ghost.personality.Clyde;
-import fr.LaurentFE.pacManClone.ghost.personality.Inky;
-import fr.LaurentFE.pacManClone.ghost.personality.Pinky;
+import fr.LaurentFE.pacManClone.entities.*;
+import fr.LaurentFE.pacManClone.entities.ghostPersonality.Blinky;
+import fr.LaurentFE.pacManClone.entities.ghostPersonality.Clyde;
+import fr.LaurentFE.pacManClone.entities.ghostPersonality.Inky;
+import fr.LaurentFE.pacManClone.entities.ghostPersonality.Pinky;
+import fr.LaurentFE.pacManClone.map.GameMap;
+import fr.LaurentFE.pacManClone.map.Position;
+import fr.LaurentFE.pacManClone.map.TileIndex;
+import fr.LaurentFE.pacManClone.map.TileType;
 
 import javax.swing.*;
 import java.awt.*;

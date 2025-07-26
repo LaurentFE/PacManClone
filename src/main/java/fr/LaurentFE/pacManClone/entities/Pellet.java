@@ -1,4 +1,6 @@
-package fr.LaurentFE.pacManClone;
+package fr.LaurentFE.pacManClone.entities;
+
+import fr.LaurentFE.pacManClone.map.TileIndex;
 
 public class Pellet {
     private final TileIndex tileIndex;

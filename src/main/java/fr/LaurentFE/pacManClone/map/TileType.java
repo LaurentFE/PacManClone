@@ -1,4 +1,4 @@
-package fr.LaurentFE.pacManClone;
+package fr.LaurentFE.pacManClone.map;
 
 public enum TileType {
     PATH,
