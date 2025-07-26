@@ -1,4 +1,6 @@
-package fr.LaurentFE.pacManClone;
+package fr.LaurentFE.pacManClone.map;
+
+import fr.LaurentFE.pacManClone.entities.Pellet;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,5 +1,7 @@
 package fr.LaurentFE.pacManClone;
 
+import fr.LaurentFE.pacManClone.map.GameMap;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;

@@ -1,5 +1,7 @@
 package fr.LaurentFE.pacManClone;
 
+import fr.LaurentFE.pacManClone.entities.Orientation;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 

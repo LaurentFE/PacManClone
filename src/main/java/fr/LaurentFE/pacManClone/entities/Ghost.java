@@ -1,7 +1,11 @@
-package fr.LaurentFE.pacManClone.ghost;
+package fr.LaurentFE.pacManClone.entities;
 
 import fr.LaurentFE.pacManClone.*;
-import fr.LaurentFE.pacManClone.ghost.personality.GhostPersonality;
+import fr.LaurentFE.pacManClone.entities.ghostPersonality.GhostPersonality;
+import fr.LaurentFE.pacManClone.map.GameMap;
+import fr.LaurentFE.pacManClone.map.Position;
+import fr.LaurentFE.pacManClone.map.TileIndex;
+import fr.LaurentFE.pacManClone.map.TileType;
 
 import java.awt.*;
 import java.util.ArrayList;

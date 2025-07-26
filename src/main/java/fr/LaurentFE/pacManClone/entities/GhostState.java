@@ -1,4 +1,4 @@
-package fr.LaurentFE.pacManClone.ghost;
+package fr.LaurentFE.pacManClone.entities;
 
 public enum GhostState {
     CHASE,

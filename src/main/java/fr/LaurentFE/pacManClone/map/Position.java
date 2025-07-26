@@ -1,4 +1,6 @@
-package fr.LaurentFE.pacManClone;
+package fr.LaurentFE.pacManClone.map;
+
+import fr.LaurentFE.pacManClone.GamePanel;
 
 public class Position {
     public int x;
@@ -10,7 +12,7 @@ public class Position {
     }
 
     public TileIndex toTileIndex() {
-        return new TileIndex(x/GamePanel.TILE_SIZE, y/GamePanel.TILE_SIZE);
+        return new TileIndex(x/ GamePanel.TILE_SIZE, y/GamePanel.TILE_SIZE);
     }
 
     public String toString() {

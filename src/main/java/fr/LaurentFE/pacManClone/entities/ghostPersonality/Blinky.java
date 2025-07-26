@@ -1,8 +1,8 @@
-package fr.LaurentFE.pacManClone.ghost.personality;
+package fr.LaurentFE.pacManClone.entities.ghostPersonality;
 
 import fr.LaurentFE.pacManClone.GamePanel;
-import fr.LaurentFE.pacManClone.Orientation;
-import fr.LaurentFE.pacManClone.TileIndex;
+import fr.LaurentFE.pacManClone.entities.Orientation;
+import fr.LaurentFE.pacManClone.map.TileIndex;
 
 public final class Blinky implements GhostPersonality {
 
