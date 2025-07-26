@@ -1,6 +1,5 @@
 package fr.LaurentFE.pacManClone;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,7 +13,7 @@ public class GameMap {
     private final int mapWidthTile;
     private final TileType[][] map;
     private boolean usable;
-    private Point ghostHouse;
+    private TileIndex ghostHouse;
 
     private GameMap() {
         mapHeightTile = 36;
@@ -82,7 +81,7 @@ public class GameMap {
                     default -> TileType.UNDEFINED;
                 };
                 if (map[y][x] == TileType.GHOSTHOUSE) {
-                    ghostHouse = new Point(x, y);
+                    ghostHouse = new TileIndex(x, y);
                 } else if (map[y][x] == TileType.UNDEFINED) {
                     System.err.println("Undefined tile type in tile map : "+tile);
                     return false;
@@ -103,7 +102,7 @@ public class GameMap {
         return mapWidthTile;
     }
 
-    public Point getGhostHouse() {
+    public TileIndex getGhostHouse() {
         return ghostHouse;
     }
 
@@ -111,12 +110,12 @@ public class GameMap {
         return usable;
     }
 
-    public TileType getTile(Point position) {
-        if (position.x >= 0
-                && position.x < mapWidthTile
-                && position.y >= 0
-                && position.y < mapHeightTile) {
-            return map[position.y][position.x];
+    public TileType getTile(TileIndex tileIndex) {
+        if (tileIndex.x >= 0
+                && tileIndex.x < mapWidthTile
+                && tileIndex.y >= 0
+                && tileIndex.y < mapHeightTile) {
+            return map[tileIndex.y][tileIndex.x];
         }
         return TileType.UNDEFINED;
     }

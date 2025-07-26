@@ -2,8 +2,8 @@ package fr.LaurentFE.pacManClone.ghost.personality;
 
 import fr.LaurentFE.pacManClone.GamePanel;
 import fr.LaurentFE.pacManClone.Orientation;
+import fr.LaurentFE.pacManClone.TileIndex;
 
-import java.awt.*;
 
 public class Clyde implements GhostPersonality {
 
@@ -12,10 +12,8 @@ public class Clyde implements GhostPersonality {
     @Override
     public Orientation getNextMovementOrientation() {
         if (getSquareDistanceFromPacMan() >= 64) {
-            Point targetTile = GamePanel.PAC_MAN.getPosition();
-            targetTile.x = targetTile.x / GamePanel.TILE_SIZE;
-            targetTile.y = targetTile.y / GamePanel.TILE_SIZE;
-            Point nextMoveTile = GamePanel.CLYDE.getNextMoveTile(targetTile);
+            TileIndex targetTile = GamePanel.PAC_MAN.getPosition().toTileIndex();
+            TileIndex nextMoveTile = GamePanel.CLYDE.getNextMoveTile(targetTile);
 
             return GamePanel.CLYDE.getOrientationToGoToTile(nextMoveTile);
         } else {
@@ -24,10 +22,10 @@ public class Clyde implements GhostPersonality {
     }
 
     private int getSquareDistanceFromPacMan() {
-        Point dist = new Point(
-                GamePanel.PAC_MAN.getPosition().x / GamePanel.TILE_SIZE - GamePanel.CLYDE.getPosition().x / GamePanel.TILE_SIZE,
-                GamePanel.PAC_MAN.getPosition().y / GamePanel.TILE_SIZE - GamePanel.CLYDE.getPosition().y / GamePanel.TILE_SIZE);
+        TileIndex pacManTile = GamePanel.PAC_MAN.getPosition().toTileIndex();
+        TileIndex clydeTile = GamePanel.CLYDE.getPosition().toTileIndex();
 
-        return dist.x * dist.x + dist.y * dist.y;
+        return (pacManTile.x - clydeTile.x)*(pacManTile.x - clydeTile.x)
+                + (pacManTile.y - clydeTile.y)*(pacManTile.y - clydeTile.y);
     }
 }

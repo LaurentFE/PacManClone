@@ -2,8 +2,7 @@ package fr.LaurentFE.pacManClone.ghost.personality;
 
 import fr.LaurentFE.pacManClone.GamePanel;
 import fr.LaurentFE.pacManClone.Orientation;
-
-import java.awt.*;
+import fr.LaurentFE.pacManClone.TileIndex;
 
 public final class Blinky implements GhostPersonality {
 
@@ -11,10 +10,8 @@ public final class Blinky implements GhostPersonality {
 
     @Override
     public Orientation getNextMovementOrientation() {
-        Point targetTile = GamePanel.PAC_MAN.getPosition();
-        targetTile.x = targetTile.x / GamePanel.TILE_SIZE;
-        targetTile.y = targetTile.y / GamePanel.TILE_SIZE;
-        Point nextMoveTile = GamePanel.BLINKY.getNextMoveTile(targetTile);
+        TileIndex targetTile = GamePanel.PAC_MAN.getPosition().toTileIndex();
+        TileIndex nextMoveTile = GamePanel.BLINKY.getNextMoveTile(targetTile);
 
         return GamePanel.BLINKY.getOrientationToGoToTile(nextMoveTile);
     }

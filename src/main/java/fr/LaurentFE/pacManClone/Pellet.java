@@ -1,19 +1,17 @@
 package fr.LaurentFE.pacManClone;
 
-import java.awt.*;
-
 public class Pellet {
-    private final Point tileIndex;
+    private final TileIndex tileIndex;
     private final int score;
     private final boolean isPowerPellet;
 
     public Pellet(int x, int y, boolean isPowerPellet) {
-        tileIndex = new Point(x, y);
+        tileIndex = new TileIndex(x, y);
         score = (isPowerPellet)?50:10;
         this.isPowerPellet = isPowerPellet;
     }
 
-    public Point getTileIndex() {
+    public TileIndex getTileIndex() {
         return tileIndex;
     }
 

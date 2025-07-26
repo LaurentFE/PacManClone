@@ -21,37 +21,37 @@ public class GamePanel extends JPanel implements Runnable {
     private static final Orientation DEFAULT_ORIENTATION = Orientation.RIGHT;
     private static final int MOVE_SPEED = TILE_SIZE /8;
     public static final PacMan PAC_MAN = new PacMan(
-            new Point(TILE_SIZE *13, TILE_SIZE *26),
+            new TileIndex(13, 26).toPosition(),
             DEFAULT_ORIENTATION,
             MOVE_SPEED);
     public static final Ghost BLINKY = new Ghost(
-            new Point(TILE_SIZE *9, TILE_SIZE *14),
+            new TileIndex(9, 14).toPosition(),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.RED,
             new Blinky(),
-            new Point(0,0));
+            new TileIndex(0,0));
     public static final Ghost PINKY = new Ghost(
-            new Point(TILE_SIZE *18, TILE_SIZE *14),
+            new TileIndex(18, 14).toPosition(),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.PINK,
             new Pinky(),
-            new Point(GameMap.getInstance().getMapWidthTile() - 1, 0));
+            new TileIndex(GameMap.getInstance().getMapWidthTile() - 1, 0));
     public static final Ghost INKY = new Ghost(
-            new Point(TILE_SIZE *12, TILE_SIZE *14),
+            new TileIndex(12, 14).toPosition(),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.CYAN,
             new Inky(),
-            new Point(GameMap.getInstance().getMapWidthTile() - 1, GameMap.getInstance().getMapHeightTile() - 1));
+            new TileIndex(GameMap.getInstance().getMapWidthTile() - 1, GameMap.getInstance().getMapHeightTile() - 1));
     public static final Ghost CLYDE = new Ghost(
-            new Point(TILE_SIZE *15, TILE_SIZE *14),
+            new TileIndex(15, 14).toPosition(),
             DEFAULT_ORIENTATION,
             MOVE_SPEED,
             Color.ORANGE,
             new Clyde(),
-            new Point(0, GameMap.getInstance().getMapHeightTile() - 1));
+            new TileIndex(0, GameMap.getInstance().getMapHeightTile() - 1));
 
     private final GameMap gameMap;
     private final Set<Pellet> pellets;
@@ -100,7 +100,7 @@ public class GamePanel extends JPanel implements Runnable {
     private void drawMap(Graphics2D g2d) {
         for (int y = 0; y < gameMap.getMapHeightTile(); y++) {
             for (int x = 0; x < gameMap.getMapWidthTile(); x++) {
-                TileType currentTile = gameMap.getTile(new Point(x,y));
+                TileType currentTile = gameMap.getTile(new TileIndex(x,y));
                 if (currentTile == TileType.PATH
                         || currentTile == TileType.OUTOFBOUNDS) {
                     g2d.setColor(Color.BLACK);
@@ -369,12 +369,12 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void drawWallShape(int x, int y, Graphics2D g2d) {
         Map<String, TileType> neighbours = new HashMap<>();
-        neighbours.put("above",gameMap.getTile(new Point(x, y-1)));
-        neighbours.put("left",gameMap.getTile(new Point(x-1, y)));
-        neighbours.put("below",gameMap.getTile(new Point(x, y+1)));
+        neighbours.put("above",gameMap.getTile(new TileIndex(x, y-1)));
+        neighbours.put("left",gameMap.getTile(new TileIndex(x-1, y)));
+        neighbours.put("below",gameMap.getTile(new TileIndex(x, y+1)));
 
         g2d.setColor(Color.BLUE);
-        switch(gameMap.getTile(new Point(x,y))){
+        switch(gameMap.getTile(new TileIndex(x,y))){
             case DOUBLEHORIZONTALWALL ->
                 drawDoubleHorizontalWall(
                         neighbours.get("above")==TileType.PATH,
@@ -529,15 +529,16 @@ public class GamePanel extends JPanel implements Runnable {
     private void drawGhostScaredFace(Graphics2D g2d, Ghost ghost) {
         g2d.setColor(Color.PINK);
         int eyeSize = 2* TILE_SIZE /16;
-        Point leftEyePosition = new Point(ghost.getPosition().x + 5* TILE_SIZE /16, ghost.getPosition().y + 6* TILE_SIZE /16);
-        Point rightEyeOffset = new Point(3* TILE_SIZE /16 + eyeSize, 0);
+        Position leftEyePosition = new Position(ghost.getPosition().x + 5* TILE_SIZE /16, ghost.getPosition().y + 6* TILE_SIZE /16);
+        Position rightEyeOffset = new Position(3* TILE_SIZE /16 + eyeSize, 0);
+        Position rightEyePosition = rightEyeOffset.add(leftEyePosition);
         g2d.fillRect(leftEyePosition.x,
                 leftEyePosition.y,
                 eyeSize, eyeSize);
-        g2d.fillRect(leftEyePosition.x + rightEyeOffset.x,
-                leftEyePosition.y + rightEyeOffset.y,
+        g2d.fillRect(rightEyePosition.x,
+                rightEyePosition.y,
                 eyeSize, eyeSize);
-        Point mouthLeftCorner = new Point (ghost.getPosition().x + 3 * TILE_SIZE / 16, ghost.getPosition().y + 11* TILE_SIZE /16);
+        Position mouthLeftCorner = new Position (ghost.getPosition().x + 3 * TILE_SIZE / 16, ghost.getPosition().y + 11* TILE_SIZE /16);
         g2d.drawLine(mouthLeftCorner.x,
                 mouthLeftCorner.y,
                 mouthLeftCorner.x + TILE_SIZE / 16,
@@ -609,49 +610,50 @@ public class GamePanel extends JPanel implements Runnable {
         int eyeHeight = 6* TILE_SIZE /16;
         int eyeWidth = 4* TILE_SIZE /16;
         int pupilSize = 2* TILE_SIZE /16;
-        Point leftEyePosition = new Point(ghost.getPosition().x + 4* TILE_SIZE /16, ghost.getPosition().y + 4* TILE_SIZE /16);
-        Point rightEyeOffset = new Point(TILE_SIZE /16 + eyeWidth, 0);
-        Point leftPupilPosition = new Point(ghost.getPosition().x + 6* TILE_SIZE /16, ghost.getPosition().y + 6* TILE_SIZE /16);
-        Point[] orientationOffsets = getEyeAndPupilOrientationOffset(ghost.getOrientation());
+        Position leftEyePosition = new Position(ghost.getPosition().x + 4* TILE_SIZE /16, ghost.getPosition().y + 4* TILE_SIZE /16);
+        Position rightEyePosition = new Position(TILE_SIZE /16 + eyeWidth, 0).add(leftEyePosition);
+        Position leftPupilPosition = new Position(ghost.getPosition().x + 6* TILE_SIZE /16, ghost.getPosition().y + 6* TILE_SIZE /16);
+        Position rightPupilPosition = new Position(TILE_SIZE /16 + eyeWidth, 0).add(leftPupilPosition);
+        Position[] orientationOffsets = getEyeAndPupilOrientationOffset(ghost.getOrientation());
 
-        leftEyePosition.x += orientationOffsets[0].x;
-        leftEyePosition.y += orientationOffsets[0].y;
-        leftPupilPosition.x += orientationOffsets[1].x;
-        leftPupilPosition.y += orientationOffsets[1].y;
+        leftEyePosition.add(orientationOffsets[0]);
+        leftPupilPosition.add(orientationOffsets[1]);
+        rightEyePosition.add(orientationOffsets[0]);
+        rightPupilPosition.add(orientationOffsets[1]);
 
         g2d.fillArc(leftEyePosition.x,
                 leftEyePosition.y,
                 eyeWidth, eyeHeight, 0, 360);
-        g2d.fillArc(leftEyePosition.x + rightEyeOffset.x,
-                leftEyePosition.y + rightEyeOffset.y,
+        g2d.fillArc(rightEyePosition.x,
+                rightEyePosition.y,
                 eyeWidth, eyeHeight, 0, 360);
         g2d.setColor(Color.BLUE);
         g2d.fillArc(leftPupilPosition.x,
                 leftPupilPosition.y,
                 pupilSize, pupilSize, 0, 360);
-        g2d.fillArc(leftPupilPosition.x + rightEyeOffset.x,
-                leftPupilPosition.y + rightEyeOffset.y,
+        g2d.fillArc(rightPupilPosition.x,
+                rightPupilPosition.y,
                 pupilSize, pupilSize, 0, 360);
 
     }
 
-    private Point[] getEyeAndPupilOrientationOffset(Orientation orientation) {
-        Point eyeOrientationOffset;
-        Point pupilOrientationOffset;
+    private Position[] getEyeAndPupilOrientationOffset(Orientation orientation) {
+        Position eyeOrientationOffset;
+        Position pupilOrientationOffset;
         if (orientation == Orientation.UP) {
-            eyeOrientationOffset = new Point(-TILE_SIZE /16, -TILE_SIZE /8);
-            pupilOrientationOffset = new Point(-TILE_SIZE /8, -TILE_SIZE /4);
+            eyeOrientationOffset = new Position(-TILE_SIZE /16, -TILE_SIZE /8);
+            pupilOrientationOffset = new Position(-TILE_SIZE /8, -TILE_SIZE /4);
         } else if (orientation == Orientation.LEFT) {
-            eyeOrientationOffset = new Point(-TILE_SIZE /8, 0);
-            pupilOrientationOffset = new Point(-TILE_SIZE /4, 0);
+            eyeOrientationOffset = new Position(-TILE_SIZE /8, 0);
+            pupilOrientationOffset = new Position(-TILE_SIZE /4, 0);
         } else if (orientation == Orientation.DOWN) {
-            eyeOrientationOffset = new Point(-TILE_SIZE /16, TILE_SIZE /16);
-            pupilOrientationOffset = new Point(-2* TILE_SIZE /16, 3* TILE_SIZE /16);
+            eyeOrientationOffset = new Position(-TILE_SIZE /16, TILE_SIZE /16);
+            pupilOrientationOffset = new Position(-2* TILE_SIZE /16, 3* TILE_SIZE /16);
         } else {
-            eyeOrientationOffset = new Point(0,0);
-            pupilOrientationOffset = new Point(0, 0);
+            eyeOrientationOffset = new Position(0,0);
+            pupilOrientationOffset = new Position(0, 0);
         }
-        return new Point[]{eyeOrientationOffset, pupilOrientationOffset};
+        return new Position[]{eyeOrientationOffset, pupilOrientationOffset};
     }
 
     private void drawPacMan(Graphics2D g2d) {
@@ -677,30 +679,32 @@ public class GamePanel extends JPanel implements Runnable {
     private void drawPellets(Graphics2D g2d) {
         g2d.setColor(Color.PINK);
         for(Pellet pellet : pellets) {
+            Position pelletPosition = pellet.getTileIndex().toPosition();
             if (pellet.isPowerPellet())
-                g2d.fillOval(pellet.getTileIndex().x * TILE_SIZE + powerPelletOffset,
-                        pellet.getTileIndex().y * TILE_SIZE + powerPelletOffset,
+                g2d.fillOval(pelletPosition.x + powerPelletOffset,
+                        pelletPosition.y + powerPelletOffset,
                         powerPelletSize,
                         powerPelletSize);
             else
-                g2d.fillRect(pellet.getTileIndex().x * TILE_SIZE + pelletOffset,
-                        pellet.getTileIndex().y * TILE_SIZE + pelletOffset,
+                g2d.fillRect(pelletPosition.x + pelletOffset,
+                        pelletPosition.y + pelletOffset,
                         pelletSize,
                         pelletSize);
         }
     }
 
     private Rectangle getPelletHitBox(Pellet pellet) {
+        Position pelletPosition = pellet.getTileIndex().toPosition();
         if (pellet.isPowerPellet()) {
             return new Rectangle(
-                    pellet.getTileIndex().x * TILE_SIZE + powerPelletOffset,
-                    pellet.getTileIndex().y * TILE_SIZE + powerPelletOffset,
+                    pelletPosition.x + powerPelletOffset,
+                    pelletPosition.y + powerPelletOffset,
                     powerPelletSize,
                     powerPelletSize);
         } else {
             return new Rectangle(
-                    pellet.getTileIndex().x * TILE_SIZE + pelletOffset,
-                    pellet.getTileIndex().y * TILE_SIZE + pelletOffset,
+                    pelletPosition.x + pelletOffset,
+                    pelletPosition.y + pelletOffset,
                     pelletSize,
                     pelletSize);
         }

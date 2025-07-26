@@ -1,9 +1,6 @@
 package fr.LaurentFE.pacManClone.ghost;
 
-import fr.LaurentFE.pacManClone.GameMap;
-import fr.LaurentFE.pacManClone.GamePanel;
-import fr.LaurentFE.pacManClone.Orientation;
-import fr.LaurentFE.pacManClone.TileType;
+import fr.LaurentFE.pacManClone.*;
 import fr.LaurentFE.pacManClone.ghost.personality.GhostPersonality;
 
 import java.awt.*;
@@ -18,17 +15,17 @@ public class Ghost {
     private final Color color;
     private GhostState state;
     private final GhostPersonality chasePersonality;
-    private final Point scatterTargetTile;
-    private  final Point eatenTargetTile = GameMap.getInstance().getGhostHouse();
+    private final TileIndex scatterTargetTile;
+    private  final TileIndex eatenTargetTile = GameMap.getInstance().getGhostHouse();
     private final GameMap gameMap;
-    private Point lastCrossroadTile;
+    private TileIndex lastCrossroadTile;
 
-    public Ghost(Point startingPosition,
+    public Ghost(Position startingPosition,
                  Orientation startingOrientation,
                  int moveSpeed,
                  Color color,
                  GhostPersonality chasePersonality,
-                 Point scatterTargetTile) {
+                 TileIndex scatterTargetTile) {
         hitBox = new Rectangle(startingPosition.x, startingPosition.y, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE);
         orientation = startingOrientation;
         this.moveSpeed = moveSpeed;
@@ -37,7 +34,7 @@ public class Ghost {
         this.chasePersonality = chasePersonality;
         this.scatterTargetTile = scatterTargetTile;
         gameMap = GameMap.getInstance();
-        lastCrossroadTile = new Point(0, 0);
+        lastCrossroadTile = new TileIndex(0, 0);
     }
 
     public Orientation getOrientation() {
@@ -52,15 +49,15 @@ public class Ghost {
         return color;
     }
 
-    public Point getPosition() {
-        return hitBox.getLocation();
+    public Position getPosition() {
+        return new Position(hitBox.x, hitBox.y);
     }
 
     public GhostState getState() {
         return state;
     }
 
-    public Point getLastCrossroadTile() {
+    public TileIndex getLastCrossroadTile() {
         return lastCrossroadTile;
     }
 
@@ -76,65 +73,67 @@ public class Ghost {
         }
     }
 
-    public void bumpOutOfCollision(Point collisionTileMapPosition) {
+    public void bumpOutOfCollision(TileIndex collisionTile) {
+        Position collisionPosition = collisionTile.toPosition();
         if (orientation == Orientation.LEFT) {
-            hitBox.x = collisionTileMapPosition.x * GamePanel.TILE_SIZE + GamePanel.TILE_SIZE;
+            hitBox.x = collisionPosition.x + GamePanel.TILE_SIZE;
         } else if (orientation == Orientation.RIGHT) {
-            hitBox.x = collisionTileMapPosition.x * GamePanel.TILE_SIZE - GamePanel.TILE_SIZE;
+            hitBox.x = collisionPosition.x - GamePanel.TILE_SIZE;
         } else if (orientation == Orientation.UP) {
-            hitBox.y = collisionTileMapPosition.y * GamePanel.TILE_SIZE + GamePanel.TILE_SIZE;
+            hitBox.y = collisionPosition.y + GamePanel.TILE_SIZE;
         } else if (orientation == Orientation.DOWN) {
-            hitBox.y = collisionTileMapPosition.y * GamePanel.TILE_SIZE - GamePanel.TILE_SIZE;
+            hitBox.y = collisionPosition.y - GamePanel.TILE_SIZE;
         }
     }
 
     private Rectangle getNextPathTileForOrientation(Orientation nextOrientation) {
-        Point directionModifier;
+        TileIndex directionModifier;
         if (nextOrientation == Orientation.UP) {
-            directionModifier = new Point(0, -1);
+            directionModifier = new TileIndex(0, -1);
         } else if (nextOrientation == Orientation.LEFT) {
-            directionModifier = new Point(-1, 0);
+            directionModifier = new TileIndex(-1, 0);
         } else if (nextOrientation == Orientation.DOWN) {
-            directionModifier = new Point(0, 1);
+            directionModifier = new TileIndex(0, 1);
         } else {
-            directionModifier = new Point(1, 0);
+            directionModifier = new TileIndex(1, 0);
         }
-        Point tileAPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.y);
-        Point tileBPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.y);
-        Point tileCPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.y);
+        TileIndex tileAIndex = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier);
+        TileIndex tileBIndex = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier);
+        TileIndex tileCIndex = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier);
 
         if (nextOrientation == Orientation.UP || nextOrientation == Orientation.DOWN) {
-            tileAPosition.x -= 1;
-            tileCPosition.x += 1;
+            tileAIndex.x -= 1;
+            tileCIndex.x += 1;
         } else {
-            tileAPosition.y -= 1;
-            tileCPosition.y += 1;
+            tileAIndex.y -= 1;
+            tileCIndex.y += 1;
         }
 
-        if (canGoThroughTile(tileAPosition)) {
+        Position tileAPosition = tileAIndex.toPosition();
+        Position tileBPosition = tileBIndex.toPosition();
+        Position tileCPosition = tileCIndex.toPosition();
+
+        if (canGoThroughTile(tileAIndex)) {
             return new Rectangle(
-                    tileAPosition.x * GamePanel.TILE_SIZE,
-                    tileAPosition.y * GamePanel.TILE_SIZE,
+                    tileAPosition.x,
+                    tileAPosition.y,
                     GamePanel.TILE_SIZE,
                     GamePanel.TILE_SIZE
             );
-        } else if (canGoThroughTile(tileBPosition)) {
+        } else if (canGoThroughTile(tileBIndex)) {
             return new Rectangle(
-                    tileBPosition.x * GamePanel.TILE_SIZE,
-                    tileBPosition.y * GamePanel.TILE_SIZE,
+                    tileBPosition.x,
+                    tileBPosition.y,
                     GamePanel.TILE_SIZE,
                     GamePanel.TILE_SIZE
             );
-        } else if (canGoThroughTile(tileCPosition)) {
+        } else if (canGoThroughTile(tileCIndex)) {
             return new Rectangle(
-                    tileCPosition.x * GamePanel.TILE_SIZE,
-                    tileCPosition.y * GamePanel.TILE_SIZE,
+                    tileCPosition.x,
+                    tileCPosition.y,
                     GamePanel.TILE_SIZE,
                     GamePanel.TILE_SIZE
             );
@@ -166,24 +165,20 @@ public class Ghost {
     }
 
     private boolean isCurrentTileACrossroad() {
-        HashMap<Orientation, Point> directionModifier = new HashMap<>();
-        directionModifier.put(Orientation.UP, new Point(0, -1));
-        directionModifier.put(Orientation.LEFT, new Point(-1, 0));
-        directionModifier.put(Orientation.DOWN, new Point(0, 1));
-        directionModifier.put(Orientation.RIGHT, new Point(1, 0));
+        HashMap<Orientation, TileIndex> directionModifier = new HashMap<>();
+        directionModifier.put(Orientation.UP, new TileIndex(0, -1));
+        directionModifier.put(Orientation.LEFT, new TileIndex(-1, 0));
+        directionModifier.put(Orientation.DOWN, new TileIndex(0, 1));
+        directionModifier.put(Orientation.RIGHT, new TileIndex(1, 0));
 
-        Point tileAbovePosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).y);
-        Point tileOnLeftPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).y);
-        Point tileBelowPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).y);
-        Point tileOnRightPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).y);
+        TileIndex tileAbovePosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.UP));
+        TileIndex tileOnLeftPosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.LEFT));
+        TileIndex tileBelowPosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.DOWN));
+        TileIndex tileOnRightPosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.RIGHT));
 
         int possibleDirections=0;
         if (canGoThroughTile(tileAbovePosition))
@@ -199,48 +194,41 @@ public class Ghost {
     }
 
     private boolean alreadyDecidedAtThisCrossroad() {
-        Point currentTile = new Point(
-                hitBox.x / GamePanel.TILE_SIZE,
-                hitBox.y / GamePanel.TILE_SIZE);
+        TileIndex currentTile = new Position(hitBox.x, hitBox.y).toTileIndex();
         return getLastCrossroadTile().x == currentTile.x
                 && getLastCrossroadTile().y == currentTile.y;
     }
 
     private boolean isFacingAWall() {
-        HashMap<Orientation, Point> directionModifier = new HashMap<>();
-        directionModifier.put(Orientation.UP, new Point(0, -1));
-        directionModifier.put(Orientation.LEFT, new Point(-1, 0));
-        directionModifier.put(Orientation.DOWN, new Point(0, 1));
-        directionModifier.put(Orientation.RIGHT, new Point(1, 0));
+        HashMap<Orientation, TileIndex> directionModifier = new HashMap<>();
+        directionModifier.put(Orientation.UP, new TileIndex(0, -1));
+        directionModifier.put(Orientation.LEFT, new TileIndex(-1, 0));
+        directionModifier.put(Orientation.DOWN, new TileIndex(0, 1));
+        directionModifier.put(Orientation.RIGHT, new TileIndex(1, 0));
 
-        Point tileInFront = new Point(hitBox.x / GamePanel.TILE_SIZE, hitBox.y / GamePanel.TILE_SIZE);
-        tileInFront.x += directionModifier.get(orientation).x;
-        tileInFront.y += directionModifier.get(orientation).y;
+        TileIndex tileInFront = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(orientation));
 
         return !canGoThroughTile(tileInFront);
     }
 
-    public ArrayList<Point> getConsideredMoveTiles() {
-        HashMap<Orientation, Point> directionModifier = new HashMap<>();
-        directionModifier.put(Orientation.UP, new Point(0, -1));
-        directionModifier.put(Orientation.LEFT, new Point(-1, 0));
-        directionModifier.put(Orientation.DOWN, new Point(0, 1));
-        directionModifier.put(Orientation.RIGHT, new Point(1, 0));
+    public ArrayList<TileIndex> getConsideredMoveTiles() {
+        HashMap<Orientation, TileIndex> directionModifier = new HashMap<>();
+        directionModifier.put(Orientation.UP, new TileIndex(0, -1));
+        directionModifier.put(Orientation.LEFT, new TileIndex(-1, 0));
+        directionModifier.put(Orientation.DOWN, new TileIndex(0, 1));
+        directionModifier.put(Orientation.RIGHT, new TileIndex(1, 0));
 
-        Point tileAbovePosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).y);
-        Point tileOnLeftPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).y);
-        Point tileBelowPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).y);
-        Point tileOnRightPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).y);
+        TileIndex tileAbovePosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.UP));
+        TileIndex tileOnLeftPosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.LEFT));
+        TileIndex tileBelowPosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.DOWN));
+        TileIndex tileOnRightPosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.RIGHT));
 
-        ArrayList<Point> consideredMoveTiles = new ArrayList<>();
+        ArrayList<TileIndex> consideredMoveTiles = new ArrayList<>();
         if (orientation != Orientation.DOWN && GamePanel.CLYDE.canGoThroughTile(tileAbovePosition))
             consideredMoveTiles.add(tileAbovePosition);
         if (orientation != Orientation.RIGHT && GamePanel.CLYDE.canGoThroughTile(tileOnLeftPosition))
@@ -253,10 +241,10 @@ public class Ghost {
         return consideredMoveTiles;
     }
 
-    public Point getNextMoveTile(Point targetTile) {
-        Point finalTile = new Point();
+    public TileIndex getNextMoveTile(TileIndex targetTile) {
+        TileIndex finalTile = new TileIndex(0,0);
         int squaredDist = Integer.MAX_VALUE;
-        for (Point consideredTile : getConsideredMoveTiles()) {
+        for (TileIndex consideredTile : getConsideredMoveTiles()) {
             int relativeXDist = targetTile.x - consideredTile.x;
             int relativeYDist = targetTile.y - consideredTile.y;
             int squaredDistanceToTarget = relativeXDist * relativeXDist + relativeYDist * relativeYDist;
@@ -269,45 +257,40 @@ public class Ghost {
         return finalTile;
     }
 
-    public Orientation getOrientationToGoToTile(Point tile) {
-        Point currentPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE,
-                hitBox.y / GamePanel.TILE_SIZE);
-        if (tile.x == currentPosition.x && tile.y < currentPosition.y)
+    public Orientation getOrientationToGoToTile(TileIndex tile) {
+        TileIndex currentTile = new Position(hitBox.x, hitBox.y).toTileIndex();
+        if (tile.x == currentTile.x && tile.y < currentTile.y)
             return Orientation.UP;
-        else if (tile.x < currentPosition.x && tile.y == currentPosition.y)
+        else if (tile.x < currentTile.x && tile.y == currentTile.y)
             return Orientation.LEFT;
-        else if (tile.x == currentPosition.x && tile.y > currentPosition.y)
+        else if (tile.x == currentTile.x && tile.y > currentTile.y)
             return Orientation.DOWN;
-        else if (tile.x > currentPosition.x && tile.y == currentPosition.y)
+        else if (tile.x > currentTile.x && tile.y == currentTile.y)
             return Orientation.RIGHT;
         else
             return orientation;
     }
 
     public Orientation getNextScatterMovementOrientation() {
-        Point nextMoveTile = getNextMoveTile(scatterTargetTile);
+        TileIndex nextMoveTile = getNextMoveTile(scatterTargetTile);
         return getOrientationToGoToTile(nextMoveTile);
     }
 
-    public Point getBehindTile() {
-        HashMap<Orientation, Point> directionModifier = new HashMap<>();
-        directionModifier.put(Orientation.UP, new Point(0, -1));
-        directionModifier.put(Orientation.LEFT, new Point(-1, 0));
-        directionModifier.put(Orientation.DOWN, new Point(0, 1));
-        directionModifier.put(Orientation.RIGHT, new Point(1, 0));
-        Point tileAbovePosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.UP).y);
-        Point tileOnLeftPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.LEFT).y);
-        Point tileBelowPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.DOWN).y);
-        Point tileOnRightPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).x,
-                hitBox.y / GamePanel.TILE_SIZE + directionModifier.get(Orientation.RIGHT).y);
+    public TileIndex getBehindTile() {
+        HashMap<Orientation, TileIndex> directionModifier = new HashMap<>();
+        directionModifier.put(Orientation.UP, new TileIndex(0, -1));
+        directionModifier.put(Orientation.LEFT, new TileIndex(-1, 0));
+        directionModifier.put(Orientation.DOWN, new TileIndex(0, 1));
+        directionModifier.put(Orientation.RIGHT, new TileIndex(1, 0));
+
+        TileIndex tileAbovePosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.UP));
+        TileIndex tileOnLeftPosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.LEFT));
+        TileIndex tileBelowPosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.DOWN));
+        TileIndex tileOnRightPosition = new Position(hitBox.x, hitBox.y).toTileIndex()
+                .add(directionModifier.get(Orientation.RIGHT));
         return switch (orientation) {
             case DOWN -> tileAbovePosition;
             case RIGHT -> tileOnLeftPosition;
@@ -317,7 +300,7 @@ public class Ghost {
     }
 
     public Orientation getNextFrightenedMovementOrientation() {
-        ArrayList<Point> consideredMoveTiles = getConsideredMoveTiles();
+        ArrayList<TileIndex> consideredMoveTiles = getConsideredMoveTiles();
         if (consideredMoveTiles.size() > 1) {
             consideredMoveTiles.add(getBehindTile());
             Random random = new Random();
@@ -327,11 +310,9 @@ public class Ghost {
     }
 
     public Orientation getNextEatenMovementOrientation() {
-        Point currentPosition = new Point(
-                hitBox.x / GamePanel.TILE_SIZE,
-                hitBox.y / GamePanel.TILE_SIZE);
+        TileIndex currentTile = new Position(hitBox.x, hitBox.y).toTileIndex();
 
-        if (currentPosition.x != eatenTargetTile.x || currentPosition.y != eatenTargetTile.y)
+        if (currentTile.x != eatenTargetTile.x || currentTile.y != eatenTargetTile.y)
             return getOrientationToGoToTile(getNextMoveTile(eatenTargetTile));
         return Orientation.DOWN;
     }
@@ -356,7 +337,7 @@ public class Ghost {
 
         if (canGetIntoPath(nextOrientation)) {
             if (isCurrentTileACrossroad())
-                lastCrossroadTile = new Point(hitBox.x / GamePanel.TILE_SIZE, hitBox.y / GamePanel.TILE_SIZE);
+                lastCrossroadTile = new Position(hitBox.x, hitBox.y).toTileIndex();
             setOrientation(nextOrientation);
             updatePosition();
             return true;
@@ -366,18 +347,10 @@ public class Ghost {
 
     private void updatePosition() {
         move();
-        Point upperLeftTile = new Point(
-                (hitBox.x / GamePanel.TILE_SIZE),
-                (hitBox.y / GamePanel.TILE_SIZE));
-        Point upperRightTile = new Point(
-                ((hitBox.x + hitBox.width-1) / GamePanel.TILE_SIZE),
-                (hitBox.y / GamePanel.TILE_SIZE));
-        Point lowerLeftTile = new Point(
-                (hitBox.x / GamePanel.TILE_SIZE),
-                ((hitBox.y + hitBox.height-1) / GamePanel.TILE_SIZE));
-        Point lowerRightTile = new Point(
-                ((hitBox.x + hitBox.width-1) / GamePanel.TILE_SIZE),
-                ((hitBox.y + hitBox.height-1) / GamePanel.TILE_SIZE));
+        TileIndex upperLeftTile = new Position(hitBox.x, hitBox.y).toTileIndex();
+        TileIndex upperRightTile = new Position(hitBox.x + hitBox.width-1, hitBox.y).toTileIndex();
+        TileIndex lowerLeftTile = new Position(hitBox.x, hitBox.y + hitBox.height-1).toTileIndex();
+        TileIndex lowerRightTile = new Position(hitBox.x + hitBox.width-1, hitBox.y + hitBox.height-1).toTileIndex();
 
         if (!canGoThroughTile(upperLeftTile)) {
             bumpOutOfCollision(upperLeftTile);
@@ -390,10 +363,10 @@ public class Ghost {
         }
     }
 
-    public boolean canGoThroughTile(Point tileCoords) {
-        return gameMap.getTile(tileCoords) == TileType.PATH
-                || gameMap.getTile(tileCoords) == TileType.GHOSTHOUSE
-                || (gameMap.getTile(tileCoords) == TileType.DOOR && state == GhostState.EATEN);
+    public boolean canGoThroughTile(TileIndex tileIndex) {
+        return gameMap.getTile(tileIndex) == TileType.PATH
+                || gameMap.getTile(tileIndex) == TileType.GHOSTHOUSE
+                || (gameMap.getTile(tileIndex) == TileType.DOOR && state == GhostState.EATEN);
     }
 
     public void update() {
