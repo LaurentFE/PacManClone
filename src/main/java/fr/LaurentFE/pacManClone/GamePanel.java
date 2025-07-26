@@ -65,7 +65,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     public GamePanel() {
         this.gameMap = GameMap.getInstance();
-        pellets = gameMap.loadPellets("src/main/resources/level0_pellets");
+        pellets = gameMap.loadPellets("../resources/level0_pellets");
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()* TILE_SIZE, gameMap.getMapHeightTile()* TILE_SIZE));
         setBackground(Color.BLACK);
         setDoubleBuffered(true); // Render is made on a second panel, then copied to the main widow => smoother rendering

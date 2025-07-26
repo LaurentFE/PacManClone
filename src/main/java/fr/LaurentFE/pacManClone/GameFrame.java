@@ -23,7 +23,7 @@ public class GameFrame extends JFrame {
         });
 
         GameMap gameMap = GameMap.getInstance();
-        gameMap.loadMap("src/main/resources/level0");
+        gameMap.loadMap("../resources/level0");
         if (!gameMap.isUsable()) {
             closeUnusableMap();
             mainDisplay = null;
