@@ -13,18 +13,40 @@ public class PacMan {
     private final int maxMouthAngle;
     private int currentMouthAngle;
     private int mouthAngleIncrement;
+    private boolean isAlive;
+    private int lives;
+    private boolean deathAnimationFinished;
     private final int moveSpeed;
     private final Rectangle hitBox;
     private final GameMap gameMap;
 
-    public PacMan(Position startingPosition, Orientation startingOrientation, int moveSpeed) {
+    public PacMan(Position startingPosition, Orientation startingOrientation, int moveSpeed, int lives) {
         hitBox = new Rectangle(startingPosition.x, startingPosition.y, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE);
         orientation = startingOrientation;
         this.moveSpeed = moveSpeed;
         maxMouthAngle = 90;
         currentMouthAngle = maxMouthAngle;
         mouthAngleIncrement = -5;
+        isAlive = true;
+        this.lives = lives;
+        deathAnimationFinished = false;
         gameMap = GameMap.getInstance();
+    }
+
+    public boolean isDeathAnimationFinished() {
+        return deathAnimationFinished;
+    }
+
+    public Rectangle getHitBox() {
+        return hitBox;
+    }
+
+    public int getLives() {
+        return lives;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
     }
 
     public void animateMouth() {
@@ -190,9 +212,27 @@ public class PacMan {
         return false;
     }
 
+    public void kill() {
+        isAlive = false;
+        deathAnimationFinished = false;
+    }
+
+    private boolean animateDeath() {
+        orientation = Orientation.UP;
+        currentMouthAngle += mouthAngleIncrement;
+        return currentMouthAngle >= 360;
+    }
+
     public void update(Orientation nextOrientation) {
-        if (!tryToChangeDirection(nextOrientation)) {
-            updatePosition();
+        if (isAlive) {
+            if (!tryToChangeDirection(nextOrientation)) {
+                updatePosition();
+            }
+        } else {
+            if (!animateDeath())
+               return;
+            lives--;
+            deathAnimationFinished = true;
         }
     }
 }

@@ -41,6 +41,10 @@ public class Ghost {
         lastCrossroadTile = new TileIndex(0, 0);
     }
 
+    public Rectangle getHitBox() {
+        return hitBox;
+    }
+
     public Orientation getOrientation() {
         return orientation;
     }
