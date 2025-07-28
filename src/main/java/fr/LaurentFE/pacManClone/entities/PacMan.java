@@ -219,6 +219,8 @@ public class PacMan {
 
     private boolean animateDeath() {
         orientation = Orientation.UP;
+        if (mouthAngleIncrement < 0)
+            mouthAngleIncrement *= -1;
         currentMouthAngle += mouthAngleIncrement;
         return currentMouthAngle >= 360;
     }
