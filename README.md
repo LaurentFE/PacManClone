@@ -13,8 +13,6 @@ Move with ```directional arrows``` or ```Z Q S D```
 ## Known issues / Not implemented yet
 - PacMan/Ghosts can't circle around the map when going out of bounds (NIY)
 - Ghost can't change state upon correct stimuli (timer, power pellet, getting eaten, coming back to unlife) (NIY)
-- PacMan can't die (NIY)
-- Game can only end if all pellets are eaten
 - There is no scoring system (NIY)
 
 ## Context of the project
