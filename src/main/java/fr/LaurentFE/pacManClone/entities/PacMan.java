@@ -127,17 +127,17 @@ public class PacMan {
         Position tileBPosition = tileBIndex.toPosition();
         Position tileCPosition = tileCIndex.toPosition();
 
-        if (canGoThroughTile(tileAIndex)) {
-            return new Rectangle(
-                    tileAPosition.x,
-                    tileAPosition.y,
-                    GamePanel.TILE_SIZE,
-                    GamePanel.TILE_SIZE
-            );
-        } else if (canGoThroughTile(tileBIndex)) {
+        if (canGoThroughTile(tileBIndex)) {
             return new Rectangle(
                     tileBPosition.x,
                     tileBPosition.y,
+                    GamePanel.TILE_SIZE,
+                    GamePanel.TILE_SIZE
+            );
+        } else if (canGoThroughTile(tileAIndex)) {
+            return new Rectangle(
+                    tileAPosition.x,
+                    tileAPosition.y,
                     GamePanel.TILE_SIZE,
                     GamePanel.TILE_SIZE
             );
@@ -227,7 +227,7 @@ public class PacMan {
 
     public void update(Orientation nextOrientation) {
         if (isAlive) {
-            if (!tryToChangeDirection(nextOrientation)) {
+            if (nextOrientation != null && !tryToChangeDirection(nextOrientation)) {
                 updatePosition();
             }
         } else {

@@ -45,7 +45,7 @@ public class GamePanel extends JPanel implements Runnable {
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()* TILE_SIZE, gameMap.getMapHeightTile()* TILE_SIZE));
         setBackground(Color.BLACK);
         setDoubleBuffered(true); // Render is made on a second panel, then copied to the main widow => smoother rendering
-        gameKeyHandler = new GameKeyHandler(DEFAULT_ORIENTATION);
+        gameKeyHandler = new GameKeyHandler();
         addKeyListener(gameKeyHandler);
         setFocusable(true);
     }
@@ -65,6 +65,7 @@ public class GamePanel extends JPanel implements Runnable {
     private void resetLevel() {
         instantiateGhosts();
         instantiatePacMan(PAC_MAN.getLives());
+        gameKeyHandler.resetInput();
     }
 
     private void instantiatePacMan(int lives) {
