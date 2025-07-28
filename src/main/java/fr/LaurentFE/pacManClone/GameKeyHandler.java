@@ -9,9 +9,9 @@ public class GameKeyHandler implements KeyListener {
 
     private Orientation nextOrientation;
 
-    public GameKeyHandler(Orientation defaultOrientation) {
+    public GameKeyHandler() {
         super();
-        nextOrientation = defaultOrientation;
+        nextOrientation = null;
     }
 
     @Override
@@ -45,5 +45,9 @@ public class GameKeyHandler implements KeyListener {
 
     public Orientation getNextOrientation() {
         return nextOrientation;
+    }
+
+    public void resetInput() {
+        nextOrientation = null;
     }
 }
