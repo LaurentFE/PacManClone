@@ -23,38 +23,12 @@ public class GamePanel extends JPanel implements Runnable {
     public static final int TILE_SIZE = 32;
     private static final Orientation DEFAULT_ORIENTATION = Orientation.RIGHT;
     private static final int MOVE_SPEED = TILE_SIZE /8;
-    public static final PacMan PAC_MAN = new PacMan(
-            new TileIndex(13, 26).toPosition(),
-            DEFAULT_ORIENTATION,
-            MOVE_SPEED);
-    public static final Ghost BLINKY = new Ghost(
-            new TileIndex(9, 14).toPosition(),
-            DEFAULT_ORIENTATION,
-            MOVE_SPEED,
-            Color.RED,
-            new Blinky(),
-            new TileIndex(0,0));
-    public static final Ghost PINKY = new Ghost(
-            new TileIndex(18, 14).toPosition(),
-            DEFAULT_ORIENTATION,
-            MOVE_SPEED,
-            Color.PINK,
-            new Pinky(),
-            new TileIndex(GameMap.getInstance().getMapWidthTile() - 1, 0));
-    public static final Ghost INKY = new Ghost(
-            new TileIndex(12, 14).toPosition(),
-            DEFAULT_ORIENTATION,
-            MOVE_SPEED,
-            Color.CYAN,
-            new Inky(),
-            new TileIndex(GameMap.getInstance().getMapWidthTile() - 1, GameMap.getInstance().getMapHeightTile() - 1));
-    public static final Ghost CLYDE = new Ghost(
-            new TileIndex(15, 14).toPosition(),
-            DEFAULT_ORIENTATION,
-            MOVE_SPEED,
-            Color.ORANGE,
-            new Clyde(),
-            new TileIndex(0, GameMap.getInstance().getMapHeightTile() - 1));
+    private static final int INITIAL_LIVES = 3;
+    public static PacMan PAC_MAN;
+    public static Ghost BLINKY;
+    public static Ghost PINKY;
+    public static Ghost INKY;
+    public static Ghost CLYDE;
 
     private final GameMap gameMap;
     private final Set<Pellet> pellets;
@@ -66,6 +40,8 @@ public class GamePanel extends JPanel implements Runnable {
     public GamePanel() {
         this.gameMap = GameMap.getInstance();
         pellets = gameMap.loadPellets("../resources/level0_pellets");
+        instantiateGhosts();
+        instantiatePacMan(INITIAL_LIVES);
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()* TILE_SIZE, gameMap.getMapHeightTile()* TILE_SIZE));
         setBackground(Color.BLACK);
         setDoubleBuffered(true); // Render is made on a second panel, then copied to the main widow => smoother rendering
@@ -86,6 +62,50 @@ public class GamePanel extends JPanel implements Runnable {
         gameThread=null;
     }
 
+    private void resetLevel() {
+        instantiateGhosts();
+        instantiatePacMan(PAC_MAN.getLives());
+    }
+
+    private void instantiatePacMan(int lives) {
+        PAC_MAN = new PacMan(
+                new TileIndex(13, 26).toPosition(),
+                DEFAULT_ORIENTATION,
+                MOVE_SPEED,
+                lives);
+    }
+
+    private void instantiateGhosts() {
+        BLINKY = new Ghost(
+                new TileIndex(9, 14).toPosition(),
+                DEFAULT_ORIENTATION,
+                MOVE_SPEED,
+                Color.RED,
+                new Blinky(),
+                new TileIndex(0,0));
+        PINKY = new Ghost(
+                new TileIndex(18, 14).toPosition(),
+                DEFAULT_ORIENTATION,
+                MOVE_SPEED,
+                Color.PINK,
+                new Pinky(),
+                new TileIndex(GameMap.getInstance().getMapWidthTile() - 1, 0));
+        INKY = new Ghost(
+                new TileIndex(12, 14).toPosition(),
+                DEFAULT_ORIENTATION,
+                MOVE_SPEED,
+                Color.CYAN,
+                new Inky(),
+                new TileIndex(GameMap.getInstance().getMapWidthTile() - 1, GameMap.getInstance().getMapHeightTile() - 1));
+        CLYDE = new Ghost(
+                new TileIndex(15, 14).toPosition(),
+                DEFAULT_ORIENTATION,
+                MOVE_SPEED,
+                Color.ORANGE,
+                new Clyde(),
+                new TileIndex(0, GameMap.getInstance().getMapHeightTile() - 1));
+    }
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
@@ -93,10 +113,12 @@ public class GamePanel extends JPanel implements Runnable {
         drawMap(g2d);
         drawPellets(g2d);
         drawPacMan(g2d);
-        drawGhost(g2d, BLINKY);
-        drawGhost(g2d, INKY);
-        drawGhost(g2d, PINKY);
-        drawGhost(g2d, CLYDE);
+        if(PAC_MAN.isAlive()) {
+            drawGhost(g2d, BLINKY);
+            drawGhost(g2d, INKY);
+            drawGhost(g2d, PINKY);
+            drawGhost(g2d, CLYDE);
+        }
 
     }
 
@@ -718,17 +740,39 @@ public class GamePanel extends JPanel implements Runnable {
             Set<Pellet> eatenPellets = new HashSet<>();
             for(Pellet pellet : pellets) {
                 Rectangle pelletHitBox = getPelletHitBox(pellet);
-                Rectangle pacManHitBox = new Rectangle(
-                        PAC_MAN.getPosition().x,
-                        PAC_MAN.getPosition().y,
-                        TILE_SIZE,
-                        TILE_SIZE);
+                Rectangle pacManHitBox = PAC_MAN.getHitBox();
                 if (pelletHitBox.intersection(pacManHitBox).getSize().equals(pelletHitBox.getSize())) {
                     eatenPellets.add(pellet);
                 }
             }
             for(Pellet pellet : eatenPellets) {
                 pellets.remove(pellet);
+            }
+        }
+    }
+
+    private boolean ghostCollidesWithPacMan(Ghost ghost) {
+        Rectangle ghostHitBox =  ghost.getHitBox();
+        Rectangle pacManHitBox = PAC_MAN.getHitBox();
+        Rectangle collisionBox = ghostHitBox.intersection(pacManHitBox);
+        if (collisionBox.height >= 0 && collisionBox.width >= 0) {
+            double collisionBoxArea = collisionBox.height * collisionBox.width;
+            double tileArea = TILE_SIZE * TILE_SIZE;
+            return collisionBoxArea / tileArea >= 0.3;
+        }
+        return false;
+    }
+
+    private void checkCollisionWithGhosts() {
+        Set<Ghost> ghosts = new HashSet<>();
+        ghosts.add(BLINKY);
+        ghosts.add(INKY);
+        ghosts.add(PINKY);
+        ghosts.add(CLYDE);
+        for (Ghost ghost : ghosts) {
+            if (ghostCollidesWithPacMan(ghost)) {
+                PAC_MAN.kill();
+                return;
             }
         }
     }
@@ -747,15 +791,38 @@ public class GamePanel extends JPanel implements Runnable {
         parentFrame.closeGame();
     }
 
+    public void closeOnDeath() {
+        JOptionPane.showMessageDialog(
+                null,
+                """
+                        Oh no !
+                        You have died you last life.
+                        This is Game Over.""",
+                "GAME OVER",
+                JOptionPane.INFORMATION_MESSAGE);
+        stopGameThread();
+        GameFrame parentFrame = (GameFrame) SwingUtilities.getWindowAncestor(this);
+        parentFrame.closeGame();
+    }
+
     public void update() {
         PAC_MAN.update(gameKeyHandler.getNextOrientation());
-        BLINKY.update();
-        PINKY.update();
-        INKY.update();
-        CLYDE.update();
-        if (pellets.isEmpty())
-            closeOnVictory();
-        checkCollisionWithPellets();
+        if(PAC_MAN.isAlive()) {
+            BLINKY.update();
+            PINKY.update();
+            INKY.update();
+            CLYDE.update();
+            checkCollisionWithGhosts();
+            if (pellets.isEmpty())
+                closeOnVictory();
+            checkCollisionWithPellets();
+        }
+        if(PAC_MAN.isDeathAnimationFinished()) {
+            if (PAC_MAN.getLives() == 0)
+                closeOnDeath();
+            else
+                resetLevel();
+        }
     }
 
     @Override
