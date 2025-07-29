@@ -36,6 +36,7 @@ public class GamePanel extends JPanel implements Runnable {
     private final int pelletOffset = (TILE_SIZE - pelletSize) / 2;
     private final int powerPelletSize = 16;
     private final int powerPelletOffset = (TILE_SIZE - powerPelletSize) / 2;
+    private final Set<Ghost> ghosts = new HashSet<>();
 
     public GamePanel() {
         this.gameMap = GameMap.getInstance();
@@ -77,6 +78,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void instantiateGhosts() {
+        ghosts.clear();
         BLINKY = new Ghost(
                 new TileIndex(9, 14).toPosition(),
                 DEFAULT_ORIENTATION,
@@ -105,6 +107,10 @@ public class GamePanel extends JPanel implements Runnable {
                 Color.ORANGE,
                 new Clyde(),
                 new TileIndex(0, GameMap.getInstance().getMapHeightTile() - 1));
+        ghosts.add(BLINKY);
+        ghosts.add(PINKY);
+        ghosts.add(INKY);
+        ghosts.add(CLYDE);
     }
 
     public void paintComponent(Graphics g) {
@@ -115,10 +121,8 @@ public class GamePanel extends JPanel implements Runnable {
         drawPellets(g2d);
         drawPacMan(g2d);
         if(PAC_MAN.isAlive()) {
-            drawGhost(g2d, BLINKY);
-            drawGhost(g2d, INKY);
-            drawGhost(g2d, PINKY);
-            drawGhost(g2d, CLYDE);
+            for (Ghost ghost : ghosts)
+                drawGhost(g2d, ghost);
         }
 
     }
@@ -134,7 +138,7 @@ public class GamePanel extends JPanel implements Runnable {
                             y* TILE_SIZE,
                             TILE_SIZE,
                             TILE_SIZE);
-                } else if (currentTile == TileType.DOOR) {
+                } else if (currentTile == TileType.DOOR || currentTile == TileType.DECORATIVEDOOR) {
                     g2d.setColor(Color.PINK);
                     g2d.fillRect(x* TILE_SIZE,
                             y* TILE_SIZE + TILE_SIZE /2 + TILE_SIZE /4,
@@ -736,6 +740,11 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
+    private void frightenGhosts() {
+        for (Ghost ghost : ghosts)
+            ghost.setState(GhostState.FRIGHTENED);
+    }
+
     private void checkCollisionWithPellets() {
         if(pellets != null) {
             Set<Pellet> eatenPellets = new HashSet<>();
@@ -744,6 +753,8 @@ public class GamePanel extends JPanel implements Runnable {
                 Rectangle pacManHitBox = PAC_MAN.getHitBox();
                 if (pelletHitBox.intersection(pacManHitBox).getSize().equals(pelletHitBox.getSize())) {
                     eatenPellets.add(pellet);
+                    if (pellet.isPowerPellet())
+                        frightenGhosts();
                 }
             }
             for(Pellet pellet : eatenPellets) {
@@ -765,15 +776,14 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void checkCollisionWithGhosts() {
-        Set<Ghost> ghosts = new HashSet<>();
-        ghosts.add(BLINKY);
-        ghosts.add(INKY);
-        ghosts.add(PINKY);
-        ghosts.add(CLYDE);
         for (Ghost ghost : ghosts) {
             if (ghostCollidesWithPacMan(ghost)) {
-                PAC_MAN.kill();
-                return;
+                if (ghost.getState() == GhostState.FRIGHTENED)
+                    ghost.setState(GhostState.EATEN);
+                else if (ghost.getState() != GhostState.EATEN){
+                    PAC_MAN.kill();
+                    return;
+                    }
             }
         }
     }
@@ -809,10 +819,8 @@ public class GamePanel extends JPanel implements Runnable {
     public void update() {
         PAC_MAN.update(gameKeyHandler.getNextOrientation());
         if(PAC_MAN.isAlive()) {
-            BLINKY.update();
-            PINKY.update();
-            INKY.update();
-            CLYDE.update();
+            for (Ghost ghost : ghosts)
+                ghost.update();
             checkCollisionWithGhosts();
             if (pellets.isEmpty())
                 closeOnVictory();
@@ -829,7 +837,7 @@ public class GamePanel extends JPanel implements Runnable {
     @Override
     public void run() {
         final double FPS = 60;
-        double drawIntervalNanoSec = 1_000_000_000/FPS;
+        double drawIntervalNanoSec = 1_000_000_000L/FPS;
         long lastUpdateTimeNanoSec = System.nanoTime();
         long currentTimeNanoSec;
 

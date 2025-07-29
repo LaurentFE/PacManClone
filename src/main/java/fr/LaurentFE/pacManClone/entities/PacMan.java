@@ -196,8 +196,7 @@ public class PacMan {
     }
 
     public boolean canGoThroughTile(TileIndex tileIndex) {
-        return gameMap.getTile(tileIndex) == TileType.PATH
-                || gameMap.getTile(tileIndex) == TileType.GHOSTHOUSE;
+        return gameMap.getTile(tileIndex) == TileType.PATH;
     }
 
     private boolean tryToChangeDirection(Orientation nextOrientation) {
