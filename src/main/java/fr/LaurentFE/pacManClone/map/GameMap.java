@@ -79,6 +79,7 @@ public class GameMap {
                     case 'h' -> TileType.SIMPLEINNERUPRIGHTCORNER;
                     case '0' -> TileType.OUTOFBOUNDS;
                     case 'w' -> TileType.DOOR;
+                    case 'W' -> TileType.DECORATIVEDOOR;
                     case 'X' -> TileType.GHOSTHOUSE;
                     default -> TileType.UNDEFINED;
                 };

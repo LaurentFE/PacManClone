@@ -23,6 +23,12 @@ public class Ghost {
     private  final TileIndex eatenTargetTile = GameMap.getInstance().getGhostHouse();
     private final GameMap gameMap;
     private TileIndex lastCrossroadTile;
+    private long chaseNanoTimeStart;
+    private long scatterNanoTimeStart;
+    private long frightenedNanoTimeStart;
+    private static final long CHASE_NANO_TIME_DURATION = 20_000_000_000L;
+    private static final long SCATTER_NANO_TIME_DURATION = 3_000_000_000L;
+    private static final long FRIGHTENED_NANO_TIME_DURATION = 5_000_000_000L;
 
     public Ghost(Position startingPosition,
                  Orientation startingOrientation,
@@ -39,6 +45,9 @@ public class Ghost {
         this.scatterTargetTile = scatterTargetTile;
         gameMap = GameMap.getInstance();
         lastCrossroadTile = new TileIndex(0, 0);
+        chaseNanoTimeStart = System.nanoTime();
+        scatterNanoTimeStart = 0;
+        frightenedNanoTimeStart = 0;
     }
 
     public Rectangle getHitBox() {
@@ -63,6 +72,42 @@ public class Ghost {
 
     public GhostState getState() {
         return state;
+    }
+
+    private boolean canBeFrightened() {
+        return state != GhostState.EATEN;
+    }
+
+    private boolean canBeEaten() {
+        return state == GhostState.FRIGHTENED;
+    }
+
+    private boolean canBeRevived() {
+        return state == GhostState.EATEN;
+    }
+
+    private boolean canChase() {
+        return state == GhostState.SCATTER || state == GhostState.FRIGHTENED;
+    }
+
+    private boolean canScatter() {
+        return state == GhostState.CHASE;
+    }
+
+    public void setState(GhostState ghostState) {
+        if(ghostState == GhostState.FRIGHTENED && canBeFrightened()
+                || ghostState == GhostState.EATEN && canBeEaten()
+                || ghostState == GhostState.CHASE && canBeRevived()
+                || ghostState == GhostState.CHASE && canChase()
+                || ghostState == GhostState.SCATTER && canScatter()) {
+            if (ghostState == GhostState.FRIGHTENED)
+                frightenedNanoTimeStart = System.nanoTime();
+            else if (ghostState == GhostState.SCATTER)
+                scatterNanoTimeStart = System.nanoTime();
+            else if (ghostState == GhostState.CHASE)
+                chaseNanoTimeStart = System.nanoTime();
+            state = ghostState;
+        }
     }
 
     public TileIndex getLastCrossroadTile() {
@@ -124,17 +169,17 @@ public class Ghost {
         Position tileBPosition = tileBIndex.toPosition();
         Position tileCPosition = tileCIndex.toPosition();
 
-        if (canGoThroughTile(tileAIndex)) {
-            return new Rectangle(
-                    tileAPosition.x,
-                    tileAPosition.y,
-                    GamePanel.TILE_SIZE,
-                    GamePanel.TILE_SIZE
-            );
-        } else if (canGoThroughTile(tileBIndex)) {
+        if (canGoThroughTile(tileBIndex)) {
             return new Rectangle(
                     tileBPosition.x,
                     tileBPosition.y,
+                    GamePanel.TILE_SIZE,
+                    GamePanel.TILE_SIZE
+            );
+        } else if (canGoThroughTile(tileAIndex)) {
+            return new Rectangle(
+                    tileAPosition.x,
+                    tileAPosition.y,
                     GamePanel.TILE_SIZE,
                     GamePanel.TILE_SIZE
             );
@@ -237,13 +282,13 @@ public class Ghost {
                 .add(directionModifier.get(Orientation.RIGHT));
 
         ArrayList<TileIndex> consideredMoveTiles = new ArrayList<>();
-        if (orientation != Orientation.DOWN && GamePanel.CLYDE.canGoThroughTile(tileAbovePosition))
+        if (orientation != Orientation.DOWN && canGoThroughTile(tileAbovePosition))
             consideredMoveTiles.add(tileAbovePosition);
-        if (orientation != Orientation.RIGHT && GamePanel.CLYDE.canGoThroughTile(tileOnLeftPosition))
+        if (orientation != Orientation.RIGHT && canGoThroughTile(tileOnLeftPosition))
             consideredMoveTiles.add(tileOnLeftPosition);
-        if (orientation != Orientation.UP && GamePanel.CLYDE.canGoThroughTile(tileBelowPosition))
+        if (orientation != Orientation.UP && canGoThroughTile(tileBelowPosition))
             consideredMoveTiles.add(tileBelowPosition);
-        if (orientation != Orientation.LEFT && GamePanel.CLYDE.canGoThroughTile(tileOnRightPosition))
+        if (orientation != Orientation.LEFT && canGoThroughTile(tileOnRightPosition))
             consideredMoveTiles.add(tileOnRightPosition);
 
         return consideredMoveTiles;
@@ -314,6 +359,9 @@ public class Ghost {
             Random random = new Random();
             return getOrientationToGoToTile(consideredMoveTiles.get(random.nextInt(consideredMoveTiles.size())));
         }
+        // Temporary : frightened ghosts stuck in the loop-around corridor get an empty consideredMoveTiles set.
+        if (consideredMoveTiles.isEmpty())
+            return orientation;
         return getOrientationToGoToTile(consideredMoveTiles.getFirst());
     }
 
@@ -326,8 +374,8 @@ public class Ghost {
     }
 
     public Orientation getNextMovementOrientation() {
-        if (alreadyDecidedAtThisCrossroad()
-                && !isFacingAWall())
+        if (!isFacingAWall()
+                && alreadyDecidedAtThisCrossroad())
             return orientation;
 
         return switch (state) {
@@ -353,6 +401,32 @@ public class Ghost {
         return false;
     }
 
+    private void updateState() {
+        long currentTime = System.nanoTime();
+        if (state == GhostState.CHASE
+                && currentTime - chaseNanoTimeStart >= CHASE_NANO_TIME_DURATION) {
+            setState(GhostState.SCATTER);
+            scatterNanoTimeStart = currentTime;
+        }
+        else if (state == GhostState.SCATTER
+                && currentTime - scatterNanoTimeStart >= SCATTER_NANO_TIME_DURATION) {
+            setState(GhostState.CHASE);
+            chaseNanoTimeStart = currentTime;
+        }
+        else if (state == GhostState.FRIGHTENED
+                && currentTime - frightenedNanoTimeStart >= FRIGHTENED_NANO_TIME_DURATION) {
+            setState(GhostState.CHASE);
+            chaseNanoTimeStart = currentTime;
+            }
+        else if (state == GhostState.EATEN
+                && gameMap.getTile(new Position(hitBox.x, hitBox.y).toTileIndex()) == TileType.GHOSTHOUSE) {
+            setState(GhostState.CHASE);
+            chaseNanoTimeStart = currentTime;
+            orientation = Orientation.UP;
+            lastCrossroadTile = new TileIndex(0,0);
+        }
+    }
+
     private void updatePosition() {
         move();
         TileIndex upperLeftTile = new Position(hitBox.x, hitBox.y).toTileIndex();
@@ -374,10 +448,15 @@ public class Ghost {
     public boolean canGoThroughTile(TileIndex tileIndex) {
         return gameMap.getTile(tileIndex) == TileType.PATH
                 || gameMap.getTile(tileIndex) == TileType.GHOSTHOUSE
-                || (gameMap.getTile(tileIndex) == TileType.DOOR && state == GhostState.EATEN);
+                || (gameMap.getTile(tileIndex) == TileType.DOOR
+                    && state == GhostState.EATEN)
+                || (gameMap.getTile(tileIndex) == TileType.DOOR
+                    && state == GhostState.CHASE
+                    && orientation != Orientation.DOWN);
     }
 
     public void update() {
+        updateState();
         if (!mustChangeDirection()) {
             updatePosition();
         }
