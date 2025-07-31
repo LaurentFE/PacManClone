@@ -38,11 +38,16 @@ public class GamePanel extends JPanel implements Runnable {
     private final int powerPelletOffset = (TILE_SIZE - powerPelletSize) / 2;
     private final Set<Ghost> ghosts = new HashSet<>();
 
+    private int eatenGhosts;
+    private int score;
+
     public GamePanel() {
         this.gameMap = GameMap.getInstance();
         pellets = gameMap.loadPellets("../resources/level0_pellets");
         instantiateGhosts();
         instantiatePacMan(INITIAL_LIVES);
+        eatenGhosts = 0;
+        score = 0;
         setPreferredSize(new Dimension(gameMap.getMapWidthTile()* TILE_SIZE, gameMap.getMapHeightTile()* TILE_SIZE));
         setBackground(Color.BLACK);
         setDoubleBuffered(true); // Render is made on a second panel, then copied to the main widow => smoother rendering
@@ -118,6 +123,7 @@ public class GamePanel extends JPanel implements Runnable {
         Graphics2D g2d = (Graphics2D) g;
 
         drawMap(g2d);
+        drawHud(g2d);
         drawPellets(g2d);
         drawPacMan(g2d);
         if(PAC_MAN.isAlive()) {
@@ -125,6 +131,13 @@ public class GamePanel extends JPanel implements Runnable {
                 drawGhost(g2d, ghost);
         }
 
+    }
+
+    private void drawHud(Graphics2D g2d) {
+        Position scorePosition = new TileIndex(3, 2).toPosition();
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Power Red And Green", Font.PLAIN, TILE_SIZE));
+        g2d.drawString("Score: "+score, scorePosition.x, scorePosition.y);
     }
 
     private void drawMap(Graphics2D g2d) {
@@ -741,6 +754,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void frightenGhosts() {
+        eatenGhosts = 0;
         for (Ghost ghost : ghosts)
             ghost.setState(GhostState.FRIGHTENED);
     }
@@ -753,6 +767,7 @@ public class GamePanel extends JPanel implements Runnable {
                 Rectangle pacManHitBox = PAC_MAN.getHitBox();
                 if (pelletHitBox.intersection(pacManHitBox).getSize().equals(pelletHitBox.getSize())) {
                     eatenPellets.add(pellet);
+                    score += pellet.getScore();
                     if (pellet.isPowerPellet())
                         frightenGhosts();
                 }
@@ -778,9 +793,11 @@ public class GamePanel extends JPanel implements Runnable {
     private void checkCollisionWithGhosts() {
         for (Ghost ghost : ghosts) {
             if (ghostCollidesWithPacMan(ghost)) {
-                if (ghost.getState() == GhostState.FRIGHTENED)
+                if (ghost.getState() == GhostState.FRIGHTENED) {
                     ghost.setState(GhostState.EATEN);
-                else if (ghost.getState() != GhostState.EATEN){
+                    eatenGhosts++;
+                    score += ghost.getScore() * (int) Math.pow(2, eatenGhosts);
+                } else if (ghost.getState() != GhostState.EATEN){
                     PAC_MAN.kill();
                     return;
                     }
@@ -794,7 +811,8 @@ public class GamePanel extends JPanel implements Runnable {
                 """
                         Congratulations !
                         You have eaten all the pellets on the map.
-                        Victory is yours !""",
+                        Victory is yours !
+                        You got a score of :\s""" +score,
                 "VICTORY",
                 JOptionPane.INFORMATION_MESSAGE);
         stopGameThread();
@@ -807,8 +825,8 @@ public class GamePanel extends JPanel implements Runnable {
                 null,
                 """
                         Oh no !
-                        You have died you last life.
-                        This is Game Over.""",
+                        This is Game Over.
+                        You got a score of :\s"""+score,
                 "GAME OVER",
                 JOptionPane.INFORMATION_MESSAGE);
         stopGameThread();
