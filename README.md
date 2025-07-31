@@ -11,13 +11,11 @@ When the build is done, run this command to execute :\
 Move with ```directional arrows``` or ```Z Q S D```
 
 ## Known issues / Not implemented yet
-- PacMan/Ghosts can't circle around the map when going out of bounds (NIY)
-- Ghosts can get stuck in the "Looping around" corridors as they're NIY.
 - There is no scoring system (NIY)
 
 ## Context of the project
 ### WHAT
-A clone of the classic arcade game Pac Man, in Java
+A clone of the classic arcade game Pac-Man, in Java
 
 ### HOW
 Developed in Java JDK 21
