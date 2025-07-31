@@ -29,6 +29,7 @@ public class Ghost {
     private static final long CHASE_NANO_TIME_DURATION = 20_000_000_000L;
     private static final long SCATTER_NANO_TIME_DURATION = 3_000_000_000L;
     private static final long FRIGHTENED_NANO_TIME_DURATION = 5_000_000_000L;
+    private final int score;
 
     public Ghost(Position startingPosition,
                  Orientation startingOrientation,
@@ -48,6 +49,7 @@ public class Ghost {
         chaseNanoTimeStart = System.nanoTime();
         scatterNanoTimeStart = 0;
         frightenedNanoTimeStart = 0;
+        score = 100;
     }
 
     public Rectangle getHitBox() {
@@ -72,6 +74,10 @@ public class Ghost {
 
     public GhostState getState() {
         return state;
+    }
+
+    public int getScore() {
+        return score;
     }
 
     private boolean canBeFrightened() {
