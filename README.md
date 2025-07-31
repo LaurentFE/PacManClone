@@ -1,5 +1,10 @@
 # PacMan clone, in Java
 
+Please enjoy this recreation of the classic arcade game Pac-Man, in Java.\
+Note that by default, the game panel will take ```896*1125 pixels``` in size (not accounting for the window borders around it).\
+If your display is not at a high enough resolution, you can change the ```TILE_SIZE``` from ```32``` to ```16``` in the following file on ```line 23``` :\
+```<project folder>/src/main/java/fr/LaurentFE/pacManClone/GamePanel.java```
+
 ## How to run project
 Make sure your Java home environment variable is set to the Java version 21, as it is the version used to develop this application.\
 Build with command line from `<project folder>/src/main/java` :\
@@ -35,4 +40,4 @@ The target result is :
 - PacMan can eat pellets to increase score
 - PacMan can eat a power pellet to make them frightened
 - PacMan can eat a frightened ghost, increasing score and forcing the ghost to go resurrect at their base
-- Level is reset when all pellets have been eaten
+- Game is finished when all pellets have been eaten
