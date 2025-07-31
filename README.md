@@ -10,8 +10,8 @@ When the build is done, run this command to execute :\
 ## Controls
 Move with ```directional arrows``` or ```Z Q S D```
 
-## Known issues / Not implemented yet
-- There is no scoring system (NIY)
+## State of the project
+All originally intended features are now implemented.
 
 ## Context of the project
 ### WHAT
@@ -36,5 +36,3 @@ The target result is :
 - PacMan can eat a power pellet to make them frightened
 - PacMan can eat a frightened ghost, increasing score and forcing the ghost to go resurrect at their base
 - Level is reset when all pellets have been eaten
-
-Increasing difficulty, and fruits may be added to the list. We'll see.
