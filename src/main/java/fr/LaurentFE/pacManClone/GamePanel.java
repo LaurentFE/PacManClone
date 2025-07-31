@@ -134,10 +134,12 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void drawHud(Graphics2D g2d) {
-        Position scorePosition = new TileIndex(3, 2).toPosition();
+        Position scorePosition = new TileIndex(gameMap.getMapWidthTile() / 2 - 2, 2).toPosition();
+        Position livesPosition = new TileIndex(gameMap.getMapWidthTile() / 2 - 1, gameMap.getMapHeightTile() - 1).toPosition();
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Power Red And Green", Font.PLAIN, TILE_SIZE));
         g2d.drawString("Score: "+score, scorePosition.x, scorePosition.y);
+        g2d.drawString("Lives: "+PAC_MAN.getLives(), livesPosition.x, livesPosition.y);
     }
 
     private void drawMap(Graphics2D g2d) {
