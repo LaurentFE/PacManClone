@@ -117,8 +117,12 @@ public class Ghost {
     public void move() {
         if (orientation == Orientation.LEFT) {
             hitBox.x = hitBox.x - moveSpeed;
+            if (hitBox.x < -GamePanel.TILE_SIZE)
+                hitBox.x = (gameMap.getMapWidthTile() + 1) * GamePanel.TILE_SIZE + hitBox.x;
         } else if (orientation == Orientation.RIGHT) {
             hitBox.x = hitBox.x + moveSpeed;
+            if (hitBox.x >= gameMap.getMapWidthTile() * GamePanel.TILE_SIZE)
+                hitBox.x = hitBox.x - (gameMap.getMapWidthTile() + 1) * GamePanel.TILE_SIZE;
         } else if (orientation == Orientation.UP) {
             hitBox.y = hitBox.y - moveSpeed;
         } else if (orientation == Orientation.DOWN) {
@@ -137,6 +141,13 @@ public class Ghost {
         } else if (orientation == Orientation.DOWN) {
             hitBox.y = collisionPosition.y - GamePanel.TILE_SIZE;
         }
+    }
+
+    private void tileLoopAroundHorizontal(TileIndex tile) {
+        if (tile.x < 0)
+            tile.x = gameMap.getMapWidthTile() - 1;
+        if (tile.x >= gameMap.getMapWidthTile())
+            tile.x = 0;
     }
 
     private Rectangle getNextPathTileForOrientation(Orientation nextOrientation) {
@@ -164,6 +175,10 @@ public class Ghost {
             tileAIndex.y -= 1;
             tileCIndex.y += 1;
         }
+
+        tileLoopAroundHorizontal(tileAIndex);
+        tileLoopAroundHorizontal(tileBIndex);
+        tileLoopAroundHorizontal(tileCIndex);
 
         Position tileAPosition = tileAIndex.toPosition();
         Position tileBPosition = tileBIndex.toPosition();
@@ -433,6 +448,11 @@ public class Ghost {
         TileIndex upperRightTile = new Position(hitBox.x + hitBox.width-1, hitBox.y).toTileIndex();
         TileIndex lowerLeftTile = new Position(hitBox.x, hitBox.y + hitBox.height-1).toTileIndex();
         TileIndex lowerRightTile = new Position(hitBox.x + hitBox.width-1, hitBox.y + hitBox.height-1).toTileIndex();
+
+        tileLoopAroundHorizontal(upperLeftTile);
+        tileLoopAroundHorizontal(upperRightTile);
+        tileLoopAroundHorizontal(lowerLeftTile);
+        tileLoopAroundHorizontal(lowerRightTile);
 
         if (!canGoThroughTile(upperLeftTile)) {
             bumpOutOfCollision(upperLeftTile);
